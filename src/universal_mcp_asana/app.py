@@ -4,7 +4,7 @@ from universal_mcp.integrations import Integration
 
 class AsanaApp(APIApplication):
     def __init__(self, integration: Integration = None, **kwargs) -> None:
-        super().__init__(name='asanaapp', integration=integration, **kwargs)
+        super().__init__(name='asana', integration=integration, **kwargs)
         self.base_url = "https://app.asana.com/api/1.0"
 
 
