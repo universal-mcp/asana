@@ -1,14 +1,16 @@
-from typing import Any, Annotated
+import json
+from typing import Any, Literal, Optional
 from universal_mcp.applications import APIApplication
 from universal_mcp.integrations import Integration
 
 class AsanaApp(APIApplication):
-    def __init__(self, integration: Integration = None, **kwargs) -> None:
+    def __init__(self, integration: Integration | None = None, **kwargs) -> None:
         super().__init__(name='asana', integration=integration, **kwargs)
         self.base_url = "https://app.asana.com/api/1.0"
-
-
-    def get_an_allocation(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+        if not self.base_url:
+             print(f"Warning: No base_url provided and none found in schema. Requests will likely fail.")
+        
+    def get_an_allocation(self, allocation_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a complete allocation record for a single allocation.
         
@@ -22,18 +24,19 @@ class AsanaApp(APIApplication):
         Tags:
             allocation, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/allocations/{allocation_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_an_allocation(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_an_allocation(self, allocation_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing allocation by making a PUT request. Only specified fields are updated, and the complete updated allocation record is returned.
         
@@ -51,22 +54,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, allocation, important, management
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/allocations/{allocation_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_an_allocation(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_an_allocation(self, allocation_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific allocation by making a DELETE request to its URL and returns an empty data record upon success.
         
@@ -82,17 +86,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, allocations, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/allocations/{allocation_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_allocations(self, assignee: Annotated[Any, 'Globally unique identifier for the user the allocation is assigned to.'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, parent: Annotated[Any, 'Globally unique identifier for the project to filter allocations by.'] = None, workspace: Annotated[Any, 'Globally unique identifier for the workspace.'] = None) -> dict[str, Any]:
+    def get_multiple_allocations(self, parent: str | None = None, assignee: str | None = None, workspace: str | None = None, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Fetches a list of allocations filtered by specific parameters like project, user, and pagination details.
         
@@ -114,23 +120,19 @@ class AsanaApp(APIApplication):
         Tags:
             fetch, allocations, pagination, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "parent": parent,
-                "assignee": assignee,
-                "workspace": workspace,
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/allocations"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('parent', parent), ('assignee', assignee), ('workspace', workspace), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_an_allocation(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_an_allocation(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new allocation and returns its full record.
         
@@ -148,22 +150,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, allocation, http-post, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/allocations"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_an_attachment(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_an_attachment(self, attachment_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Get the full record for a single attachment, optionally including additional fields and pretty-printed output.
         
@@ -180,18 +183,19 @@ class AsanaApp(APIApplication):
         Tags:
             attachments, fetch, get, api-call, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/attachments/{attachment_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_an_attachment(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_an_attachment(self, attachment_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific, existing attachment and returns an empty data record.
         
@@ -207,17 +211,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, attachment, management
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/attachments/{attachment_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_attachments_from_an_object(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, parent: Annotated[Any, '(Required) Globally unique identifier for object to fetch statuses from. Must be a GID for a `project`, `project_brief`, or `task`.'] = None) -> dict[str, Any]:
+    def get_attachments_from_an_object(self, limit: str | None = None, offset: str | None = None, parent: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a list of attachments from a specified object, which can be a project, project brief, or task.
         
@@ -237,21 +243,19 @@ class AsanaApp(APIApplication):
         Tags:
             attachments, pagination, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "parent": parent,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/attachments"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('parent', parent), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def upload_an_attachment(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, request_body: Annotated[Any, ''] = None) -> dict[str, Any]:
+    def upload_an_attachment(self, opt_fields: str | None = None, opt_pretty: str | None = None, request_body: Any | None = None) -> dict[str, Any]:
         """
         Uploads an attachment to an object and returns the created attachment's compact record.
         
@@ -269,19 +273,19 @@ class AsanaApp(APIApplication):
         Tags:
             upload, attachment, management, important
         """
-        request_body = request_body
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        path_segment = "/attachments"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_audit_log_events(self, actor_gid: Annotated[Any, 'Filter to events triggered by the actor with this ID.'] = None, actor_type: Annotated[Any, 'Filter to events with an actor of this type.\nThis only needs to be included if querying for actor types without an ID. If `actor_gid` is included, this should be excluded.'] = None, end_at: Annotated[Any, 'Filter to events created before this time (exclusive).'] = None, event_type: Annotated[Any, 'Filter to events of this type.\nRefer to the [supported audit log events](/docs/audit-log-events#supported-audit-log-events) for a full list of values.'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, resource_gid: Annotated[Any, 'Filter to events with this resource ID.'] = None, start_at: Annotated[Any, 'Filter to events created after this time (inclusive).'] = None) -> dict[str, Any]:
+    def get_audit_log_events(self, workspace_gid: str, start_at: str | None = None, end_at: str | None = None, event_type: str | None = None, actor_type: str | None = None, actor_gid: str | None = None, resource_gid: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve audit log events from your domain, with options to filter by various criteria such as actor ID, event type, and time range.
         
@@ -304,24 +308,19 @@ class AsanaApp(APIApplication):
         Tags:
             audit, log, api, pagination, filtering, important, management
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "start_at": start_at,
-                "end_at": end_at,
-                "event_type": event_type,
-                "actor_type": actor_type,
-                "actor_gid": actor_gid,
-                "resource_gid": resource_gid,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/audit_log_events"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('start_at', start_at), ('end_at', end_at), ('event_type', event_type), ('actor_type', actor_type), ('actor_gid', actor_gid), ('resource_gid', resource_gid), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def submit_parallel_requests(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def submit_parallel_requests(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Submits multiple API requests in parallel to Asana's batch endpoints, enabling efficient batch processing of operations.
         
@@ -339,22 +338,23 @@ class AsanaApp(APIApplication):
         Tags:
             batch, async-job, request, api, asana, parallel-processing, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/batch"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_acustom_field(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_acustom_field(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new custom field in a workspace with a unique name and valid type.
         
@@ -372,22 +372,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, custom-field, workspace, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/custom_fields"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_acustom_field(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_acustom_field(self, custom_field_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve complete metadata definition of a custom field, including type-specific properties and behaviors.
         
@@ -404,18 +405,19 @@ class AsanaApp(APIApplication):
         Tags:
             custom-fields, metadata, get, api, resource, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/custom_fields/{custom_field_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_acustom_field(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_acustom_field(self, custom_field_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing custom field with provided data, returning the complete updated record. Only specified fields are modified, preserving existing values.
         
@@ -434,22 +436,23 @@ class AsanaApp(APIApplication):
         Tags:
             custom-fields, update, management, important, api
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/custom_fields/{custom_field_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_acustom_field(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_acustom_field(self, custom_field_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific existing custom field using a DELETE request to its URL. Locked fields can only be deleted by the locking user.
         
@@ -465,17 +468,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, custom-field, api-client, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/custom_fields/{custom_field_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aworkspace_scustom_fields(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aworkspace_scustom_fields(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieves a list of compact representations of custom fields within a workspace.
         
@@ -494,20 +499,19 @@ class AsanaApp(APIApplication):
         Tags:
             custom-fields, list, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/custom_fields"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_an_enum_option(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_an_enum_option(self, custom_field_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates an enum option for a custom field, adds it to the field's enum list, and returns the full record of the new option.
         
@@ -525,22 +529,23 @@ class AsanaApp(APIApplication):
         Tags:
             custom-fields, enum-options, create, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/custom_fields/{custom_field_gid}/enum_options"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def reorder_acustom_field_senum(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def reorder_acustom_field_senum(self, custom_field_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Reorders a custom field's enum. Moves an enum option to be either before or after another specified enum option.
         
@@ -559,22 +564,23 @@ class AsanaApp(APIApplication):
         Tags:
             custom_fields, enum_reorder, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/custom_fields/{custom_field_gid}/enum_options/insert"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_an_enum_option(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_an_enum_option(self, enum_option_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing enum option for custom fields and returns the full record. Locked fields can only be updated by the locking user.
         
@@ -592,22 +598,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, enum, custom-fields, async-job, api-call, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/enum_options/{enum_option_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aproject_scustom_fields(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aproject_scustom_fields(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Fetches and returns a project's custom fields settings, allowing pagination and optional inclusion of additional fields.
         
@@ -626,20 +633,19 @@ class AsanaApp(APIApplication):
         Tags:
             custom-fields, pagination, api-call, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects/{project_gid}/custom_field_settings"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aportfolio_scustom_fields(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aportfolio_scustom_fields(self, portfolio_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Fetches a portfolio's custom fields from the API, returning them in a compact form.
         
@@ -658,20 +664,19 @@ class AsanaApp(APIApplication):
         Tags:
             custom, portfolio, fetch, pagination, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/custom_field_settings"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_events_on_aresource(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, resource: Annotated[Any, '(Required) A resource ID to subscribe to. The resource can be a task, project, or goal.'] = None, sync: Annotated[Any, 'A sync token received from the last request, or none on first sync. Events will be returned from the point in time that the sync token was generated.\n*Note: On your first request, omit the sync token. The response will be the same as for an expired sync token, and will include a new valid sync token.If the sync token is too old (which may happen from time to time) the API will return a `412 Precondition Failed` error, and include a fresh sync token in the response.*'] = None) -> dict[str, Any]:
+    def get_events_on_aresource(self, opt_fields: str | None = None, resource: str | None = None, sync: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a list of events that have occurred on a specified resource since the sync token was generated.
         
@@ -690,20 +695,19 @@ class AsanaApp(APIApplication):
         Tags:
             events, sync, async_job, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "resource": resource,
-                "sync": sync,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/events"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('resource', resource), ('sync', sync), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_agoal(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_agoal(self, goal_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a complete goal record for a single goal, allowing optional fields and pretty output.
         
@@ -720,18 +724,19 @@ class AsanaApp(APIApplication):
         Tags:
             goal, management, fetch, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/goals/{goal_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_agoal(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_agoal(self, goal_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Update an existing goal by sending a PUT request to the specified URL. Only provided fields are updated, leaving unspecified fields unchanged.
         
@@ -749,22 +754,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, goals, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goals/{goal_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_agoal(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_agoal(self, goal_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific existing goal by sending a DELETE request to the goal's URL.
         
@@ -780,17 +786,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, async_job, goals, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/goals/{goal_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_goals(self, is_workspace_level: Annotated[Any, 'Filter to goals with is_workspace_level set to query value. Must be used with the workspace parameter.'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, portfolio: Annotated[Any, 'Globally unique identifier for supporting portfolio.'] = None, project: Annotated[Any, 'Globally unique identifier for supporting project.'] = None, task: Annotated[Any, 'Globally unique identifier for supporting task.'] = None, team: Annotated[Any, 'Globally unique identifier for the team.'] = None, time_periods: Annotated[Any, 'Globally unique identifiers for the time periods.'] = None, workspace: Annotated[Any, 'Globally unique identifier for the workspace.'] = None) -> dict[str, Any]:
+    def get_goals(self, portfolio: str | None = None, project: str | None = None, task: str | None = None, is_workspace_level: str | None = None, team: str | None = None, workspace: str | None = None, time_periods: str | None = None, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Fetches compact goal records based on specified parameters.
         
@@ -816,27 +824,19 @@ class AsanaApp(APIApplication):
         Tags:
             fetch, goals, list, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "portfolio": portfolio,
-                "project": project,
-                "task": task,
-                "is_workspace_level": is_workspace_level,
-                "team": team,
-                "workspace": workspace,
-                "time_periods": time_periods,
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/goals"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('portfolio', portfolio), ('project', project), ('task', task), ('is_workspace_level', is_workspace_level), ('team', team), ('workspace', workspace), ('time_periods', time_periods), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_agoal(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_agoal(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new goal in a workspace or team and returns the full record of the newly created goal.
         
@@ -854,22 +854,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, goal, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goals"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_agoal_metric(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_agoal_metric(self, goal_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates and adds a goal metric to a specified goal, replacing any existing metric.
         
@@ -887,22 +888,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, goal-metric, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goals/{goal_gid}/setMetric"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_agoal_metric(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_agoal_metric(self, goal_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Update a goal's existing metric's current value and return the updated metric record.
         
@@ -920,22 +922,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, goals, metric, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goals/{goal_gid}/setMetricCurrentValue"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_acollaborator_to_agoal(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_acollaborator_to_agoal(self, goal_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds collaborators as followers to a goal and returns the updated goal data.
         
@@ -953,22 +956,23 @@ class AsanaApp(APIApplication):
         Tags:
             add, collaborator, goal, followers, update, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goals/{goal_gid}/addFollowers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_acollaborator_from_agoal(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_acollaborator_from_agoal(self, goal_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Removes a collaborator from a goal and returns the updated goal record.
         
@@ -986,22 +990,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, collaborator, goal, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goals/{goal_gid}/removeFollowers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_parent_goals_from_agoal(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_parent_goals_from_agoal(self, goal_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves parent goals from a specific goal, returning them in a compact format.
         
@@ -1018,18 +1023,19 @@ class AsanaApp(APIApplication):
         Tags:
             goals, management, scrape, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/goals/{goal_gid}/parentGoals"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_agoal_relationship(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_agoal_relationship(self, goal_relationship_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve a complete goal relationship record by making a GET request to the specified endpoint.
         
@@ -1046,18 +1052,19 @@ class AsanaApp(APIApplication):
         Tags:
             goal-relationships, get, api, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/goal_relationships/{goal_relationship_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_agoal_relationship(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_agoal_relationship(self, goal_relationship_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing goal relationship by making a PUT request with specified data and returns the complete updated record.
         
@@ -1075,22 +1082,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, goal-relationships, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goal_relationships/{goal_relationship_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_goal_relationships(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, resource_subtype: Annotated[Any, 'If provided, filter to goal relationships with a given resource_subtype.'] = None, supported_goal: Annotated[Any, '(Required) Globally unique identifier for the supported goal in the goal relationship.'] = None) -> dict[str, Any]:
+    def get_goal_relationships(self, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None, supported_goal: str | None = None, resource_subtype: str | None = None, opt_fields: str | None = None) -> dict[str, Any]:
         """
         Retrieve goal relationships from the API, returning compact goal relationship records with optional pagination and filtering.
         
@@ -1111,22 +1119,19 @@ class AsanaApp(APIApplication):
         Tags:
             goal-relationships, pagination, async_job, api-requests, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-                "supported_goal": supported_goal,
-                "resource_subtype": resource_subtype,
-                "opt_fields": opt_fields,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/goal_relationships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset), ('supported_goal', supported_goal), ('resource_subtype', resource_subtype), ('opt_fields', opt_fields)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_asupporting_goal_relationship(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_asupporting_goal_relationship(self, goal_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a supporting goal relationship by adding a supporting resource to a specific goal and returns the new relationship record.
         
@@ -1144,22 +1149,23 @@ class AsanaApp(APIApplication):
         Tags:
             goal-relationships, create, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goals/{goal_gid}/addSupportingRelationship"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def removes_asupporting_goal_relationship(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def removes_asupporting_goal_relationship(self, goal_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Removes a supporting goal relationship between a parent goal and its dependent goal based on provided data.
         
@@ -1176,21 +1182,23 @@ class AsanaApp(APIApplication):
         Tags:
             goal-relationships, remove, management, api, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/goals/{goal_gid}/removeSupportingRelationship"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_ajob_by_id(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_ajob_by_id(self, job_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve a job's full record by its ID.
         
@@ -1207,18 +1215,19 @@ class AsanaApp(APIApplication):
         Tags:
             get, fetch, job, async-job, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/jobs/{job_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_memberships(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, member: Annotated[Any, 'Globally unique identifier for `team` or `user`.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, parent: Annotated[Any, 'Globally unique identifier for `goal`, `project`, or `portfolio`.'] = None) -> dict[str, Any]:
+    def get_multiple_memberships(self, parent: str | None = None, member: str | None = None, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve multiple membership records for goals, projects, or portfolios, with pagination and filtering options.
         
@@ -1239,22 +1248,19 @@ class AsanaApp(APIApplication):
         Tags:
             memberships, pagination, filtering, api-client, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "parent": parent,
-                "member": member,
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('parent', parent), ('member', member), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_amembership(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_amembership(self, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new membership in a goal or project for users or teams, returning the full membership record.
         
@@ -1271,21 +1277,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, membership, management, api-integration, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_amembership(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_amembership(self, membership_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Fetches a compact project membership record.
         
@@ -1302,18 +1310,19 @@ class AsanaApp(APIApplication):
         Tags:
             membership, fetch, important, management
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/memberships/{membership_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_amembership(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_amembership(self, membership_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing membership by making a PUT request, modifying only the specified fields in the provided data.
         
@@ -1330,21 +1339,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, membership, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/memberships/{membership_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_amembership(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_amembership(self, membership_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific membership for a goal or project by sending a DELETE request to the appropriate endpoint.
         
@@ -1360,17 +1371,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, membership, api, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/memberships/{membership_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_an_organization_export_request(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_an_organization_export_request(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Initiates an asynchronous export request for an Organization in Asana.
         
@@ -1388,22 +1401,23 @@ class AsanaApp(APIApplication):
         Tags:
             async-job, export, organization-management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/organization_exports"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_details_on_an_org_export_request(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_details_on_an_org_export_request(self, organization_export_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve details of a previously-requested Organization export, including optional fields and formatted output.
         
@@ -1420,18 +1434,19 @@ class AsanaApp(APIApplication):
         Tags:
             export, organization, retrieve, details, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/organization_exports/{organization_export_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_portfolios(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, owner: Annotated[Any, 'The user who owns the portfolio. Currently, API users can only get a list of portfolios that they themselves own, unless the request is made from a Service Account. In the case of a Service Account, if this parameter is specified, then all portfolios owned by this parameter are returned. Otherwise, all portfolios across the workspace are returned.'] = None, workspace: Annotated[Any, '(Required) The workspace or organization to filter portfolios on.'] = None) -> dict[str, Any]:
+    def get_multiple_portfolios(self, limit: str | None = None, offset: str | None = None, workspace: str | None = None, owner: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve multiple portfolios, returning them in a compact representation. The portfolios are filtered by the specified workspace and can be further limited by owner, pagination parameters, and additional fields.
         
@@ -1452,22 +1467,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, portfolios, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "workspace": workspace,
-                "owner": owner,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/portfolios"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('workspace', workspace), ('owner', owner), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_aportfolio(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_aportfolio(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a portfolio in the specified workspace, allowing custom initialization without automatic UI state like Priority fields.
         
@@ -1485,22 +1497,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, portfolio-management, api-endpoint, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/portfolios"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aportfolio(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aportfolio(self, portfolio_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a portfolio record from the API, returning all fields unless filtered by optional parameters.
         
@@ -1517,18 +1530,19 @@ class AsanaApp(APIApplication):
         Tags:
             get, portfolio, api, async_job, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_aportfolio(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_aportfolio(self, portfolio_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing portfolio by modifying specified fields while preserving unspecified ones, returning the complete updated portfolio record.
         
@@ -1546,22 +1560,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, portfolio, management, important, put-request
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_aportfolio(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_aportfolio(self, portfolio_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a portfolio by making a DELETE request.
         
@@ -1577,17 +1592,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, portfolio, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_portfolio_items(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_portfolio_items(self, portfolio_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Fetches a list of portfolio items in compact form, retrieving them based on pagination parameters.
         
@@ -1606,20 +1623,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, portfolio, pagination, portfolio-management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/items"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_aportfolio_item(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_aportfolio_item(self, portfolio_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds an item to a portfolio and returns an empty data block.
         
@@ -1636,21 +1652,23 @@ class AsanaApp(APIApplication):
         Tags:
             add, portfolio, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/addItem"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_aportfolio_item(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_aportfolio_item(self, portfolio_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove an item from a portfolio via API request and return the response data.
         
@@ -1667,21 +1685,23 @@ class AsanaApp(APIApplication):
         Tags:
             portfolio, management, remove, delete, api, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/removeItem"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_acustom_field_to_aportfolio(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_acustom_field_to_aportfolio(self, portfolio_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds a custom field to a portfolio by creating a custom field setting.
         
@@ -1698,21 +1718,23 @@ class AsanaApp(APIApplication):
         Tags:
             portfolios, management, custom_fields, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/addCustomFieldSetting"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_acustom_field_from_aportfolio(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_acustom_field_from_aportfolio(self, portfolio_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove a custom field setting from a portfolio.
         
@@ -1729,21 +1751,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, custom-field, portfolio, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/removeCustomFieldSetting"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_users_to_aportfolio(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_users_to_aportfolio(self, portfolio_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Add users to a portfolio and return the updated portfolio record.
         
@@ -1761,22 +1785,23 @@ class AsanaApp(APIApplication):
         Tags:
             add, users, portfolio, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/addMembers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_users_from_aportfolio(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_users_from_aportfolio(self, portfolio_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove users from a portfolio and return the updated portfolio record.
         
@@ -1794,22 +1819,23 @@ class AsanaApp(APIApplication):
         Tags:
             portfolios, user-management, batch-update, api, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/removeMembers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_portfolio_memberships(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, portfolio: Annotated[Any, 'The portfolio to filter results on.'] = None, user: Annotated[Any, 'A string identifying a user. This can either be the string "me", an email, or the gid of a user.'] = None, workspace: Annotated[Any, 'The workspace to filter results on.'] = None) -> dict[str, Any]:
+    def get_multiple_portfolio_memberships(self, opt_fields: str | None = None, portfolio: str | None = None, workspace: str | None = None, user: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieves multiple portfolio memberships, returning them in a compact representation. Requires specifying either `portfolio` and `user`, or `workspace` and `user`. Supports pagination and optional fields.
         
@@ -1831,23 +1857,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, portfolio, membership, pagination, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "portfolio": portfolio,
-                "workspace": workspace,
-                "user": user,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/portfolio_memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('portfolio', portfolio), ('workspace', workspace), ('user', user), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aportfolio_membership(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aportfolio_membership(self, portfolio_membership_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a portfolio membership, returning the complete portfolio record.
         
@@ -1864,18 +1886,19 @@ class AsanaApp(APIApplication):
         Tags:
             portfolio, membership, retrieve, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/portfolio_memberships/{portfolio_membership_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_memberships_from_aportfolio(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, user: Annotated[Any, 'A string identifying a user. This can either be the string "me", an email, or the gid of a user.'] = None) -> dict[str, Any]:
+    def get_memberships_from_aportfolio(self, portfolio_gid: str, opt_fields: str | None = None, user: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Get memberships from a portfolio, returning compact portfolio membership records.
         
@@ -1895,21 +1918,19 @@ class AsanaApp(APIApplication):
         Tags:
             fetch, portfolio, membership, pagination, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "user": user,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/portfolios/{portfolio_gid}/portfolio_memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('user', user), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_projects(self, archived: Annotated[Any, 'Only return projects whose `archived` field takes on the value of this parameter.'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, team: Annotated[Any, 'The team to filter projects on.'] = None, workspace: Annotated[Any, 'The workspace or organization to filter projects on.'] = None) -> dict[str, Any]:
+    def get_multiple_projects(self, limit: str | None = None, offset: str | None = None, workspace: str | None = None, team: str | None = None, archived: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve multiple projects based on filtering criteria, returning compact project records. Handles pagination and allows specifying optional fields to include.
         
@@ -1931,23 +1952,19 @@ class AsanaApp(APIApplication):
         Tags:
             projects, search, pagination, data-retrieval, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "workspace": workspace,
-                "team": team,
-                "archived": archived,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('workspace', workspace), ('team', team), ('archived', archived), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_aproject(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Create a new project in a workspace or team, returning its full record.
         
@@ -1965,22 +1982,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, projects, management, workspace, team, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aproject(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Fetches a project's complete record, optionally including additional fields and formatting the output for readability.
         
@@ -1997,18 +2015,19 @@ class AsanaApp(APIApplication):
         Tags:
             projects, fetch, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects/{project_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates a specific project by modifying provided fields, returning the complete updated project record while preserving unspecified fields.
         
@@ -2026,22 +2045,23 @@ class AsanaApp(APIApplication):
         Tags:
             projects, update, api, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_aproject(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_aproject(self, project_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes an existing project by making a DELETE request to the project's URL.
         
@@ -2057,17 +2077,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, project, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects/{project_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def duplicate_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def duplicate_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Duplicates a project by creating and returning a job for asynchronous handling.
         
@@ -2085,22 +2107,23 @@ class AsanaApp(APIApplication):
         Tags:
             async_job, project, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/duplicate"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_projects_atask_is_in(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_projects_atask_is_in(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve a compact list of all projects that contain the specified task, formatted as paginated results.
         
@@ -2119,20 +2142,19 @@ class AsanaApp(APIApplication):
         Tags:
             projects, retrieve, pagination, compact-format, task-management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/projects"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_ateam_sprojects(self, archived: Annotated[Any, 'Only return projects whose `archived` field takes on the value of this parameter.'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_ateam_sprojects(self, team_gid: str, limit: str | None = None, offset: str | None = None, archived: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Fetches a team’s projects, returning compact project records with optional pagination, archival status filtering, and field inclusion control.
         
@@ -2152,21 +2174,19 @@ class AsanaApp(APIApplication):
         Tags:
             projects, list, pagination, api-client, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "archived": archived,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/teams/{team_gid}/projects"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('archived', archived), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_aproject_in_ateam(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_aproject_in_ateam(self, team_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a project shared with the specified team and returns the full record of the newly created project.
         
@@ -2184,22 +2204,23 @@ class AsanaApp(APIApplication):
         Tags:
             project, create, async-job, team, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/teams/{team_gid}/projects"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_all_projects_in_aworkspace(self, archived: Annotated[Any, 'Only return projects whose `archived` field takes on the value of this parameter.'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_all_projects_in_aworkspace(self, workspace_gid: str, limit: str | None = None, offset: str | None = None, archived: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Fetches all project records in a workspace, returning them as a dictionary.
         
@@ -2219,21 +2240,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, projects, workspace, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "archived": archived,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/projects"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('archived', archived), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_aproject_in_aworkspace(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_aproject_in_aworkspace(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Create a project in a workspace, returning the full record of the newly created project.
         
@@ -2251,22 +2270,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, project, workspace, api-call, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/projects"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_acustom_field_to_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_acustom_field_to_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Add a custom field to a project, creating a custom field setting for the project.
         
@@ -2284,22 +2304,23 @@ class AsanaApp(APIApplication):
         Tags:
             customization, projects, async_job, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/addCustomFieldSetting"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_acustom_field_from_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_acustom_field_from_aproject(self, project_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove a custom field setting from a specified project by sending a POST request with the required data.
         
@@ -2316,21 +2337,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, custom-field, project, management, async_job, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/removeCustomFieldSetting"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_task_count_of_aproject(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_task_count_of_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves the task count of a project, returning an object with task count fields. All fields are excluded by default, requiring opt-in via the `opt_fields` parameter.
         
@@ -2347,18 +2370,19 @@ class AsanaApp(APIApplication):
         Tags:
             task, count, project, important, management
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects/{project_gid}/task_counts"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_users_to_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_users_to_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds users to a project as members, potentially setting them as followers based on notification settings, and returns the updated project record.
         
@@ -2376,22 +2400,23 @@ class AsanaApp(APIApplication):
         Tags:
             add, projects, members, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/addMembers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_users_from_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_users_from_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Removes specified users from a project and returns the updated project record.
         
@@ -2409,22 +2434,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, project, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/removeMembers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_followers_to_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_followers_to_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds followers to a project, promoting specified users to members if not already part of the project. Returns the updated project record.
         
@@ -2442,22 +2468,23 @@ class AsanaApp(APIApplication):
         Tags:
             projects, add-followers, membership, api-client, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/addFollowers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_followers_from_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_followers_from_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove followers from a project without affecting membership status.
         
@@ -2475,22 +2502,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, followers, project, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/removeFollowers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_aproject_template_from_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_aproject_template_from_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a project template from a project by sending a POST request and returns the response in JSON format, asynchronously handling the template creation.
         
@@ -2508,22 +2536,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, project, template, async_job, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/saveAsTemplate"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aproject_brief(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aproject_brief(self, project_brief_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a project brief by optionally including specified fields and formatting the response.
         
@@ -2540,18 +2569,19 @@ class AsanaApp(APIApplication):
         Tags:
             project-brief, data-fetch, api-call, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/project_briefs/{project_brief_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_aproject_brief(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_aproject_brief(self, project_brief_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing project brief by making a PUT request and returns the complete updated record.
         
@@ -2569,22 +2599,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, project-briefs, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/project_briefs/{project_brief_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_aproject_brief(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_aproject_brief(self, project_brief_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Failed to extract docstring information
         
@@ -2594,17 +2625,19 @@ class AsanaApp(APIApplication):
         Returns:
             Unknown return value
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/project_briefs/{project_brief_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_aproject_brief(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_aproject_brief(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new project brief and returns the full record of the newly created brief.
         
@@ -2622,22 +2655,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, project, brief, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/project_briefs"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aproject_membership(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aproject_membership(self, project_membership_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve a project membership and its associated project record.
         
@@ -2654,18 +2688,19 @@ class AsanaApp(APIApplication):
         Tags:
             project-memberships, get, api-client, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/project_memberships/{project_membership_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_memberships_from_aproject(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, user: Annotated[Any, 'A string identifying a user. This can either be the string "me", an email, or the gid of a user.'] = None) -> dict[str, Any]:
+    def get_memberships_from_aproject(self, project_gid: str, opt_fields: str | None = None, user: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieves paginated project membership records for a specific project, returning compact data with optional fields.
         
@@ -2685,21 +2720,19 @@ class AsanaApp(APIApplication):
         Tags:
             project-memberships, pagination, list, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "user": user,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects/{project_gid}/project_memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('user', user), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aproject_status(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aproject_status(self, project_status_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Get the complete record for a single project status update. *Deprecated: new integrations should prefer the `/status_updates/{status_gid}` route.*
         
@@ -2716,18 +2749,19 @@ class AsanaApp(APIApplication):
         Tags:
             project-statuses, get, management, deprecated, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/project_statuses/{project_status_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_aproject_status(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_aproject_status(self, project_status_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific existing project status update (deprecated: new integrations should use '/status_updates/{status_gid}').
         
@@ -2743,17 +2777,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, deprecated, project-statuses, management, api, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/project_statuses/{project_status_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_statuses_from_aproject(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_statuses_from_aproject(self, project_gid: str, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None) -> dict[str, Any]:
         """
         Retrieve compact project status update records from a project, providing pagination and query parameters.
         
@@ -2772,20 +2808,19 @@ class AsanaApp(APIApplication):
         Tags:
             status, project, pagination, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects/{project_gid}/project_statuses"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_aproject_status(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_aproject_status(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new project status update (deprecated).
         
@@ -2803,22 +2838,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, project-status, deprecated, async-job, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/project_statuses"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aproject_template(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aproject_template(self, project_template_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves the complete record for a single project template including optionally specified fields.
         
@@ -2835,18 +2871,19 @@ class AsanaApp(APIApplication):
         Tags:
             project-templates, get, management, api-call, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/project_templates/{project_template_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_aproject_template(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_aproject_template(self, project_template_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Delete a project template from the system and return an empty data record.
         
@@ -2862,17 +2899,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, project-templates, management, api, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/project_templates/{project_template_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_project_templates(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, team: Annotated[Any, 'The team to filter projects on.'] = None, workspace: Annotated[Any, 'The workspace to filter results on.'] = None) -> dict[str, Any]:
+    def get_multiple_project_templates(self, workspace: str | None = None, team: str | None = None, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves multiple project templates based on specified filters like team and workspace.
         
@@ -2893,22 +2932,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, project-templates, api, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "workspace": workspace,
-                "team": team,
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/project_templates"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('workspace', workspace), ('team', team), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_ateam_sproject_templates(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_ateam_sproject_templates(self, team_gid: str, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated list of compact project template records for a team.
         
@@ -2927,20 +2963,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, project-templates, pagination, api, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/teams/{team_gid}/project_templates"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def instantiate_aproject_from_aproject_template(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def instantiate_aproject_from_aproject_template(self, project_template_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Instantiates a project from a project template and returns an asynchronous job handle for the operation.
         
@@ -2958,22 +2993,23 @@ class AsanaApp(APIApplication):
         Tags:
             project-templates, async-job, start, create, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/project_templates/{project_template_gid}/instantiateProject"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def trigger_arule(self, data: Annotated[dict[str, Any], ''] = None) -> dict[str, Any]:
+    def trigger_arule(self, rule_trigger_gid: str, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Triggers a rule configured with an incoming web request trigger, sending provided data to the rule's endpoint.
         
@@ -2989,18 +3025,23 @@ class AsanaApp(APIApplication):
         Tags:
             rules, trigger, web-request, http-client, async-job, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/rule_triggers/{rule_trigger_gid}/run"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_asection(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_asection(self, section_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a complete record for a single section, potentially including additional fields and optional formatting.
         
@@ -3017,18 +3058,19 @@ class AsanaApp(APIApplication):
         Tags:
             section, data-fetch, important, resource-management
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/sections/{section_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_asection(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_asection(self, section_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing section by making a PUT request to the specific section URL, updating only the provided fields.
         
@@ -3046,22 +3088,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, section, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/sections/{section_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_asection(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_asection(self, section_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific empty section by sending a DELETE request to its URL. The last remaining section cannot be deleted.
         
@@ -3077,17 +3120,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, section, management, http, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/sections/{section_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_sections_in_aproject(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_sections_in_aproject(self, project_gid: str, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve sections in a project, returning compact records.
         
@@ -3106,20 +3151,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, management, project, sections, pagination, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects/{project_gid}/sections"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_asection_in_aproject(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_asection_in_aproject(self, project_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new section in a project and returns the full record of the newly created section.
         
@@ -3137,22 +3181,23 @@ class AsanaApp(APIApplication):
         Tags:
             sections, create, management, api-call, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/sections"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_task_to_section(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_task_to_section(self, section_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds a task to a specific section in a project, removing it from other sections. Inserts the task at the top of the section unless position parameters are provided (insert_before/insert_after). Does not work for separator tasks (resource_subtype 'section').
         
@@ -3169,21 +3214,23 @@ class AsanaApp(APIApplication):
         Tags:
             task-management, sections, modify, async_job, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/sections/{section_gid}/addTask"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def move_or_insert_sections(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def move_or_insert_sections(self, project_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Move or insert sections by sending a POST request with provided data and optional 'pretty' formatting.
         
@@ -3200,21 +3247,23 @@ class AsanaApp(APIApplication):
         Tags:
             move, insert, sections, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/projects/{project_gid}/sections/insert"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_astatus_update(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_astatus_update(self, status_update_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Get a status update by requesting a complete record from an endpoint. The response may include optional fields based on query parameters.
         
@@ -3231,18 +3280,19 @@ class AsanaApp(APIApplication):
         Tags:
             status, get, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/status_updates/{status_update_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_astatus_update(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_astatus_update(self, status_update_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific existing status update and returns an empty data record upon success.
         
@@ -3258,17 +3308,19 @@ class AsanaApp(APIApplication):
         Tags:
             status-updates, delete, important, http
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/status_updates/{status_update_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_status_updates_from_an_object(self, created_since: Annotated[Any, 'Only return statuses that have been created since the given time.'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, parent: Annotated[Any, '(Required) Globally unique identifier for object to fetch statuses from. Must be a GID for a project, portfolio, or goal.'] = None) -> dict[str, Any]:
+    def get_status_updates_from_an_object(self, parent: str | None = None, created_since: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Fetches status updates from a specified object, returning compact status records.
         
@@ -3289,22 +3341,19 @@ class AsanaApp(APIApplication):
         Tags:
             status-updates, fetch, management, async_job, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "parent": parent,
-                "created_since": created_since,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/status_updates"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('parent', parent), ('created_since', created_since), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_astatus_update(self, data: Annotated[dict[str, Any], ''] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_astatus_update(self, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Create a status update on an object and return the full record of the newly created status update.
         
@@ -3324,24 +3373,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, status-updates, async, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/status_updates"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_astory(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_astory(self, story_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a story's full record, returning all data fields except those excluded by default. Optional parameters allow expanding specific fields and formatting the response.
         
@@ -3358,18 +3406,19 @@ class AsanaApp(APIApplication):
         Tags:
             stories, retrieve, api, get, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/stories/{story_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_astory(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_astory(self, story_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates a story and returns the full record of the updated story. Only comment stories can have their text updated, and only comment/attachment stories can be pinned. Exactly one of `text` or `html_text` must be specified when updating a comment story.
         
@@ -3387,22 +3436,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, stories, async_job, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/stories/{story_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_astory(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_astory(self, story_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a story created by the user.
         
@@ -3418,17 +3468,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, story, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/stories/{story_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_stories_from_atask(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_stories_from_atask(self, task_gid: str, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated stories associated with a task, returning compact records in a dictionary format.
         
@@ -3447,20 +3499,19 @@ class AsanaApp(APIApplication):
         Tags:
             stories, pagination, api, retrieve, async_job, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/stories"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_astory_on_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_astory_on_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a comment story on a task as the authenticated user, returning the new story's full record.
         
@@ -3478,22 +3529,23 @@ class AsanaApp(APIApplication):
         Tags:
             stories, create, comment, tasks, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/stories"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_tags(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, workspace: Annotated[Any, 'The workspace to filter tags on.'] = None) -> dict[str, Any]:
+    def get_multiple_tags(self, limit: str | None = None, offset: str | None = None, workspace: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve multiple tags with optional pagination and filtering. Returns compact tag records based on provided query parameters.
         
@@ -3513,21 +3565,19 @@ class AsanaApp(APIApplication):
         Tags:
             retrieve, pagination, filter, tags, workspace, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "workspace": workspace,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tags"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('workspace', workspace), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_atag(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_atag(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Create a new tag in a specific workspace or organization.
         
@@ -3545,22 +3595,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, tag, important, management
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tags"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_atag(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_atag(self, tag_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve a single tag with optional properties and formatted output.
         
@@ -3577,18 +3628,19 @@ class AsanaApp(APIApplication):
         Tags:
             tag, get, retrieve, api, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tags/{tag_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_atag(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_atag(self, tag_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Updates a tag's properties by sending a PUT request with specified optional fields. Only provided fields are modified; unspecified fields remain unchanged.
         
@@ -3606,18 +3658,19 @@ class AsanaApp(APIApplication):
         Tags:
             update, tag, management, async_job, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tags/{tag_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._put(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_atag(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_atag(self, tag_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific, existing tag by making a DELETE request to the tag's URL.
         
@@ -3633,17 +3686,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, tag-management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tags/{tag_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_atask_stags(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_atask_stags(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Fetches a task's tags, returning a compact representation of all associated tags.
         
@@ -3662,20 +3717,19 @@ class AsanaApp(APIApplication):
         Tags:
             fetch, tags, pagination, api, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/tags"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_tags_in_aworkspace(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_tags_in_aworkspace(self, workspace_gid: str, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated tags from a workspace with optional filters and response formatting.
         
@@ -3694,20 +3748,19 @@ class AsanaApp(APIApplication):
         Tags:
             retrieve, paginated, workspace-tags, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/tags"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_atag_in_aworkspace(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_atag_in_aworkspace(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new tag in a workspace or organization and returns its full record.
         
@@ -3725,22 +3778,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, management, tags, async-job, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/tags"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_tasks(self, assignee: Annotated[Any, 'The assignee to filter tasks on. If searching for unassigned tasks, assignee.any = null can be specified.\n*Note: If you specify `assignee`, you must also specify the `workspace` to filter on.*'] = None, completed_since: Annotated[Any, 'Only return tasks that are either incomplete or that have been completed since this time.'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, modified_since: Annotated[Any, 'Only return tasks that have been modified since the given time.\n\n*Note: A task is considered “modified” if any of its properties\nchange, or associations between it and other objects are modified\n(e.g.  a task being added to a project). A task is not considered\nmodified just because another object it is associated with (e.g. a\nsubtask) is modified. Actions that count as modifying the task\ninclude assigning, renaming, completing, and adding stories.*'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, project: Annotated[Any, 'The project to filter tasks on.'] = None, section: Annotated[Any, 'The section to filter tasks on.'] = None, workspace: Annotated[Any, 'The workspace to filter tasks on.\n*Note: If you specify `workspace`, you must also specify the `assignee` to filter on.*'] = None) -> dict[str, Any]:
+    def get_multiple_tasks(self, limit: str | None = None, offset: str | None = None, assignee: str | None = None, project: str | None = None, section: str | None = None, workspace: str | None = None, completed_since: str | None = None, modified_since: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve multiple task records filtered by parameters such as assignee, project, or workspace.
         
@@ -3765,26 +3819,19 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, list, filter, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "assignee": assignee,
-                "project": project,
-                "section": section,
-                "workspace": workspace,
-                "completed_since": completed_since,
-                "modified_since": modified_since,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('assignee', assignee), ('project', project), ('section', section), ('workspace', workspace), ('completed_since', completed_since), ('modified_since', modified_since), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_atask(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new task in a workspace, either explicitly specified or inferred from projects/parent task associations.
         
@@ -3802,22 +3849,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, task, async-job, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_atask(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve complete task record for a single task, including optional fields and formatted output.
         
@@ -3834,18 +3882,19 @@ class AsanaApp(APIApplication):
         Tags:
             retrieve, tasks, api, get, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates a specific, existing task by making a PUT request. Only the fields provided in the `data` block are updated.
         
@@ -3863,22 +3912,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, task, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_atask(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_atask(self, task_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific task permanently after moving it to the user's trash (recoverable for 30 days). Returns an empty data record upon success.
         
@@ -3894,17 +3944,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, tasks, async_job, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def duplicate_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def duplicate_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Duplicates a task by creating and returning a job that asynchronously handles the duplication.
         
@@ -3922,22 +3974,23 @@ class AsanaApp(APIApplication):
         Tags:
             duplicate, async_job, task-management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/duplicate"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_tasks_from_aproject(self, completed_since: Annotated[Any, 'Only return tasks that are either incomplete or that have been completed since this time. Accepts a date-time string or the keyword *now*.\n'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_tasks_from_aproject(self, project_gid: str, opt_fields: str | None = None, completed_since: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Get tasks from a project, returning compact task records ordered by their priority within the project.
         
@@ -3957,21 +4010,19 @@ class AsanaApp(APIApplication):
         Tags:
             get, tasks, project, api, async, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "completed_since": completed_since,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/projects/{project_gid}/tasks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('completed_since', completed_since), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_tasks_from_asection(self, completed_since: Annotated[Any, 'Only return tasks that are either incomplete or that have been completed since this time. Accepts a date-time string or the keyword *now*.\n'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_tasks_from_asection(self, section_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None, completed_since: str | None = None) -> dict[str, Any]:
         """
         Retrieves tasks from a specified section, primarily designed for board views. Filters can include completion status, pagination limits, and optional field requests.
         
@@ -3991,21 +4042,19 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, board-view, pagination, async-job, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-                "completed_since": completed_since,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/sections/{section_gid}/tasks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset), ('completed_since', completed_since)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_tasks_from_atag(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_tasks_from_atag(self, tag_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated tasks associated with a specific tag. Returns compact task records with optional field inclusion and formatted output.
         
@@ -4024,20 +4073,19 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, pagination, async, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tags/{tag_gid}/tasks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_tasks_from_auser_task_list(self, completed_since: Annotated[Any, 'Only return tasks that are either incomplete or that have been completed since this time. Accepts a date-time string or the keyword *now*.\n'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_tasks_from_auser_task_list(self, user_task_list_gid: str, opt_fields: str | None = None, completed_since: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieves tasks from a user's My Tasks list, returning a compact list of tasks with optional filtering and pagination.
         
@@ -4057,21 +4105,19 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, list, retrieve, pagination, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "completed_since": completed_since,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/user_task_lists/{user_task_list_gid}/tasks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('completed_since', completed_since), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_subtasks_from_atask(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_subtasks_from_atask(self, task_gid: str, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve subtasks from a task, returning a compact representation of all task subtasks.
         
@@ -4090,20 +4136,19 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, management, pagination, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/subtasks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_asubtask(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_asubtask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a new subtask and adds it to the parent task, returning the full record for the newly created subtask.
         
@@ -4118,22 +4163,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, subtask, tasks, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/subtasks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def set_the_parent_of_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def set_the_parent_of_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Sets the parent of a task, providing optional parameters for specifying additional fields and formatting the response.
         
@@ -4151,22 +4197,23 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/setParent"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_dependencies_from_atask(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_dependencies_from_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated dependencies of a task with optional filtering and formatting.
         
@@ -4185,20 +4232,19 @@ class AsanaApp(APIApplication):
         Tags:
             dependencies, paginated, task-management, get, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/dependencies"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def set_dependencies_for_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def set_dependencies_for_atask(self, task_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Set dependencies for a task by marking other tasks as its dependencies, up to a combined limit of 30 dependents and dependencies.
         
@@ -4215,21 +4261,23 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, dependencies, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/addDependencies"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def unlink_dependencies_from_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def unlink_dependencies_from_atask(self, task_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Unlink dependencies from a task by sending a request to the specified API endpoint.
         
@@ -4246,21 +4294,23 @@ class AsanaApp(APIApplication):
         Tags:
             unlink, dependencies, async_job, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/removeDependencies"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_dependents_from_atask(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_dependents_from_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve the compact representations of all dependents of a task, optionally specifying pagination and optional fields.
         
@@ -4279,20 +4329,19 @@ class AsanaApp(APIApplication):
         Tags:
             get, dependents, task, pagination, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/dependents"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def set_dependents_for_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def set_dependents_for_atask(self, task_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Sets dependents for a task by marking a set of tasks as dependents if they are not already.
         
@@ -4309,21 +4358,23 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, management, important, async_job
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/addDependents"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def unlink_dependents_from_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def unlink_dependents_from_atask(self, task_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Unlinks dependent tasks from the current task via an API request.
         
@@ -4340,21 +4391,23 @@ class AsanaApp(APIApplication):
         Tags:
             tasks, dependents, unlink, api, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/removeDependents"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_aproject_to_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_aproject_to_atask(self, task_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Associates a task with a project, optionally positioning it relative to other tasks or within a specific section. Returns the API response data.
         
@@ -4371,21 +4424,23 @@ class AsanaApp(APIApplication):
         Tags:
             task, project, add, update, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/addProject"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_aproject_from_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_aproject_from_atask(self, task_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove a project from a task, ensuring the task remains in the system but is no longer associated with the specified project.
         
@@ -4402,21 +4457,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, project, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/removeProject"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_atag_to_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_atag_to_atask(self, task_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds a tag to a task and returns the result in JSON format.
         
@@ -4433,21 +4490,23 @@ class AsanaApp(APIApplication):
         Tags:
             modify, task, management, async_job
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/addTag"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_atag_from_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_atag_from_atask(self, task_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove a tag from a task by sending a POST request with the task data.
         
@@ -4464,21 +4523,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, task, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/removeTag"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_followers_to_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_followers_to_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds followers to a task, returning the updated task record.
         
@@ -4496,22 +4557,23 @@ class AsanaApp(APIApplication):
         Tags:
             add, followers, task, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/addFollowers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_followers_from_atask(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_followers_from_atask(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove specified followers from a task and return the updated task record.
         
@@ -4529,22 +4591,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, followers, task, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/removeFollowers"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_atask_for_agiven_custom_id(self, ) -> dict[str, Any]:
+    def get_atask_for_agiven_custom_id(self, workspace_gid: str, custom_id: str) -> dict[str, Any]:
         """
         Fetches a task associated with a given custom ID.
         
@@ -4560,15 +4623,19 @@ class AsanaApp(APIApplication):
         Tags:
             task-retrieval, custom-id, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
+        path_segment = "/workspaces/{workspace_gid}/tasks/custom_id/{custom_id}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def search_tasks_in_aworkspace(self, assigned_byany: Annotated[Any, 'Comma-separated list of user identifiers'] = None, assigned_bynot: Annotated[Any, 'Comma-separated list of user identifiers'] = None, assigneeany: Annotated[Any, 'Comma-separated list of user identifiers'] = None, assigneenot: Annotated[Any, 'Comma-separated list of user identifiers'] = None, commented_on_bynot: Annotated[Any, 'Comma-separated list of user identifiers'] = None, completed: Annotated[Any, 'Filter to completed tasks'] = None, completed_atafter: Annotated[Any, 'ISO 8601 datetime string'] = None, completed_atbefore: Annotated[Any, 'ISO 8601 datetime string'] = None, completed_on: Annotated[Any, 'ISO 8601 date string or `null`'] = None, completed_onafter: Annotated[Any, 'ISO 8601 date string'] = None, completed_onbefore: Annotated[Any, 'ISO 8601 date string'] = None, created_atafter: Annotated[Any, 'ISO 8601 datetime string'] = None, created_atbefore: Annotated[Any, 'ISO 8601 datetime string'] = None, created_byany: Annotated[Any, 'Comma-separated list of user identifiers'] = None, created_bynot: Annotated[Any, 'Comma-separated list of user identifiers'] = None, created_on: Annotated[Any, 'ISO 8601 date string or `null`'] = None, created_onafter: Annotated[Any, 'ISO 8601 date string'] = None, created_onbefore: Annotated[Any, 'ISO 8601 date string'] = None, due_atafter: Annotated[Any, 'ISO 8601 datetime string'] = None, due_atbefore: Annotated[Any, 'ISO 8601 datetime string'] = None, due_on: Annotated[Any, 'ISO 8601 date string or `null`'] = None, due_onafter: Annotated[Any, 'ISO 8601 date string'] = None, due_onbefore: Annotated[Any, 'ISO 8601 date string'] = None, followersnot: Annotated[Any, 'Comma-separated list of user identifiers'] = None, has_attachment: Annotated[Any, 'Filter to tasks with attachments'] = None, is_blocked: Annotated[Any, 'Filter to tasks with incomplete dependencies'] = None, is_blocking: Annotated[Any, 'Filter to incomplete tasks with dependents'] = None, is_subtask: Annotated[Any, 'Filter to subtasks'] = None, liked_bynot: Annotated[Any, 'Comma-separated list of user identifiers'] = None, modified_atafter: Annotated[Any, 'ISO 8601 datetime string'] = None, modified_atbefore: Annotated[Any, 'ISO 8601 datetime string'] = None, modified_on: Annotated[Any, 'ISO 8601 date string or `null`'] = None, modified_onafter: Annotated[Any, 'ISO 8601 date string'] = None, modified_onbefore: Annotated[Any, 'ISO 8601 date string'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, portfoliosany: Annotated[Any, 'Comma-separated list of portfolio IDs'] = None, projectsall: Annotated[Any, 'Comma-separated list of project IDs'] = None, projectsany: Annotated[Any, 'Comma-separated list of project IDs'] = None, projectsnot: Annotated[Any, 'Comma-separated list of project IDs'] = None, resource_subtype: Annotated[Any, "Filters results by the task's resource_subtype"] = None, sectionsall: Annotated[Any, 'Comma-separated list of section or column IDs'] = None, sectionsany: Annotated[Any, 'Comma-separated list of section or column IDs'] = None, sectionsnot: Annotated[Any, 'Comma-separated list of section or column IDs'] = None, sort_ascending: Annotated[Any, 'Default `false`'] = None, sort_by: Annotated[Any, 'One of `due_date`, `created_at`, `completed_at`, `likes`, or `modified_at`, defaults to `modified_at`'] = None, start_on: Annotated[Any, 'ISO 8601 date string or `null`'] = None, start_onafter: Annotated[Any, 'ISO 8601 date string'] = None, start_onbefore: Annotated[Any, 'ISO 8601 date string'] = None, tagsall: Annotated[Any, 'Comma-separated list of tag IDs'] = None, tagsany: Annotated[Any, 'Comma-separated list of tag IDs'] = None, tagsnot: Annotated[Any, 'Comma-separated list of tag IDs'] = None, teamsany: Annotated[Any, 'Comma-separated list of team IDs'] = None, text: Annotated[Any, 'Performs full-text search on both task name and description'] = None) -> dict[str, Any]:
-        
+    def search_tasks_in_aworkspace(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, text: str | None = None, resource_subtype: str | None = None, assignee_any: str | None = None, assignee_not: str | None = None, portfolios_any: str | None = None, projects_any: str | None = None, projects_not: str | None = None, projects_all: str | None = None, sections_any: str | None = None, sections_not: str | None = None, sections_all: str | None = None, tags_any: str | None = None, tags_not: str | None = None, tags_all: str | None = None, teams_any: str | None = None, followers_not: str | None = None, created_by_any: str | None = None, created_by_not: str | None = None, assigned_by_any: str | None = None, assigned_by_not: str | None = None, liked_by_not: str | None = None, commented_on_by_not: str | None = None, due_on_before: str | None = None, due_on_after: str | None = None, due_on: str | None = None, due_at_before: str | None = None, due_at_after: str | None = None, start_on_before: str | None = None, start_on_after: str | None = None, start_on: str | None = None, created_on_before: str | None = None, created_on_after: str | None = None, created_on: str | None = None, created_at_before: str | None = None, created_at_after: str | None = None, completed_on_before: str | None = None, completed_on_after: str | None = None, completed_on: str | None = None, completed_at_before: str | None = None, completed_at_after: str | None = None, modified_on_before: str | None = None, modified_on_after: str | None = None, modified_on: str | None = None, modified_at_before: str | None = None, modified_at_after: str | None = None, is_blocking: str | None = None, is_blocked: str | None = None, has_attachment: str | None = None, completed: str | None = None, is_subtask: str | None = None, sort_by: str | None = None, sort_ascending: str | None = None) -> dict[str, Any]:
         """
         Searches for tasks in a workspace with extensive filtering capabilities based on task attributes, user interactions, dates, and custom parameters.
         
@@ -4637,70 +4704,19 @@ class AsanaApp(APIApplication):
         Tags:
             search, task-management, filtering, api-client, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "text": text,
-                "resource_subtype": resource_subtype,
-                "assignee.any": assigneeany,
-                "assignee.not": assigneenot,
-                "portfolios.any": portfoliosany,
-                "projects.any": projectsany,
-                "projects.not": projectsnot,
-                "projects.all": projectsall,
-                "sections.any": sectionsany,
-                "sections.not": sectionsnot,
-                "sections.all": sectionsall,
-                "tags.any": tagsany,
-                "tags.not": tagsnot,
-                "tags.all": tagsall,
-                "teams.any": teamsany,
-                "followers.not": followersnot,
-                "created_by.any": created_byany,
-                "created_by.not": created_bynot,
-                "assigned_by.any": assigned_byany,
-                "assigned_by.not": assigned_bynot,
-                "liked_by.not": liked_bynot,
-                "commented_on_by.not": commented_on_bynot,
-                "due_on.before": due_onbefore,
-                "due_on.after": due_onafter,
-                "due_on": due_on,
-                "due_at.before": due_atbefore,
-                "due_at.after": due_atafter,
-                "start_on.before": start_onbefore,
-                "start_on.after": start_onafter,
-                "start_on": start_on,
-                "created_on.before": created_onbefore,
-                "created_on.after": created_onafter,
-                "created_on": created_on,
-                "created_at.before": created_atbefore,
-                "created_at.after": created_atafter,
-                "completed_on.before": completed_onbefore,
-                "completed_on.after": completed_onafter,
-                "completed_on": completed_on,
-                "completed_at.before": completed_atbefore,
-                "completed_at.after": completed_atafter,
-                "modified_on.before": modified_onbefore,
-                "modified_on.after": modified_onafter,
-                "modified_on": modified_on,
-                "modified_at.before": modified_atbefore,
-                "modified_at.after": modified_atafter,
-                "is_blocking": is_blocking,
-                "is_blocked": is_blocked,
-                "has_attachment": has_attachment,
-                "completed": completed,
-                "is_subtask": is_subtask,
-                "sort_by": sort_by,
-                "sort_ascending": sort_ascending,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/tasks/search"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('text', text), ('resource_subtype', resource_subtype), ('assignee.any', assignee_any), ('assignee.not', assignee_not), ('portfolios.any', portfolios_any), ('projects.any', projects_any), ('projects.not', projects_not), ('projects.all', projects_all), ('sections.any', sections_any), ('sections.not', sections_not), ('sections.all', sections_all), ('tags.any', tags_any), ('tags.not', tags_not), ('tags.all', tags_all), ('teams.any', teams_any), ('followers.not', followers_not), ('created_by.any', created_by_any), ('created_by.not', created_by_not), ('assigned_by.any', assigned_by_any), ('assigned_by.not', assigned_by_not), ('liked_by.not', liked_by_not), ('commented_on_by.not', commented_on_by_not), ('due_on.before', due_on_before), ('due_on.after', due_on_after), ('due_on', due_on), ('due_at.before', due_at_before), ('due_at.after', due_at_after), ('start_on.before', start_on_before), ('start_on.after', start_on_after), ('start_on', start_on), ('created_on.before', created_on_before), ('created_on.after', created_on_after), ('created_on', created_on), ('created_at.before', created_at_before), ('created_at.after', created_at_after), ('completed_on.before', completed_on_before), ('completed_on.after', completed_on_after), ('completed_on', completed_on), ('completed_at.before', completed_at_before), ('completed_at.after', completed_at_after), ('modified_on.before', modified_on_before), ('modified_on.after', modified_on_after), ('modified_on', modified_on), ('modified_at.before', modified_at_before), ('modified_at.after', modified_at_after), ('is_blocking', is_blocking), ('is_blocked', is_blocked), ('has_attachment', has_attachment), ('completed', completed), ('is_subtask', is_subtask), ('sort_by', sort_by), ('sort_ascending', sort_ascending)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
-    
-    def get_multiple_task_templates(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, project: Annotated[Any, 'The project to filter task templates on.'] = None) -> dict[str, Any]:
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
+
+    def get_multiple_task_templates(self, limit: str | None = None, offset: str | None = None, project: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve multiple task templates with pagination and filtering options. Returns compact records of task templates filtered by specified criteria, requiring a project parameter for filtering.
         
@@ -4720,21 +4736,19 @@ class AsanaApp(APIApplication):
         Tags:
             task-templates, list, pagination, async-job, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "project": project,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/task_templates"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('project', project), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_atask_template(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_atask_template(self, task_template_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a complete task template record.
         
@@ -4751,18 +4765,19 @@ class AsanaApp(APIApplication):
         Tags:
             template, task-management, async_job, fetch, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/task_templates/{task_template_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_atask_template(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_atask_template(self, task_template_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Deletes a specific task template by making a DELETE request and returns an empty data record.
         
@@ -4778,17 +4793,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, task-template, important, management
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/task_templates/{task_template_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def instantiate_atask_from_atask_template(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def instantiate_atask_from_atask_template(self, task_template_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Instantiate a task from a task template, creating and returning a job to handle the task asynchronously.
         
@@ -4806,22 +4823,23 @@ class AsanaApp(APIApplication):
         Tags:
             instantiate, task-template, async-job, job-management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/task_templates/{task_template_gid}/instantiateTask"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_ateam(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_ateam(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Creates a team within the current workspace.
         
@@ -4839,22 +4857,23 @@ class AsanaApp(APIApplication):
         Tags:
             create, team, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/teams"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_ateam(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_ateam(self, team_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve detailed information about a team, including optional fields and formatted output as specified.
         
@@ -4871,18 +4890,19 @@ class AsanaApp(APIApplication):
         Tags:
             teams, get, api-endpoint, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/teams/{team_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_ateam(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_ateam(self, team_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Update a team within the current workspace, including modifying team data and requesting optional fields in the response.
         
@@ -4900,22 +4920,23 @@ class AsanaApp(APIApplication):
         Tags:
             teams, update, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/teams/{team_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_teams_in_aworkspace(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_teams_in_aworkspace(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated records of teams in a workspace visible to the authorized user.
         
@@ -4934,20 +4955,19 @@ class AsanaApp(APIApplication):
         Tags:
             teams, workspace, pagination, api-client, list, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/teams"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_teams_for_auser(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, organization: Annotated[Any, '(Required) The workspace or organization to filter teams on.'] = None) -> dict[str, Any]:
+    def get_teams_for_auser(self, user_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None, organization: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated list of compact team records for a user based on workspace/organization filter.
         
@@ -4967,21 +4987,19 @@ class AsanaApp(APIApplication):
         Tags:
             teams, user-management, pagination, api-client, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-                "organization": organization,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/users/{user_gid}/teams"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset), ('organization', organization)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_auser_to_ateam(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_auser_to_ateam(self, team_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Adds a user to a team and returns the complete team membership record. Requires the calling user to be a team member and the added user to exist in the same organization.
         
@@ -4999,22 +5017,23 @@ class AsanaApp(APIApplication):
         Tags:
             add, user-management, team-management, membership, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/teams/{team_gid}/addUser"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_auser_from_ateam(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_auser_from_ateam(self, team_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove a user from a team, requiring team membership in the calling user.
         
@@ -5031,21 +5050,23 @@ class AsanaApp(APIApplication):
         Tags:
             teams, user-management, remove, api, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/teams/{team_gid}/removeUser"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_ateam_membership(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_ateam_membership(self, team_membership_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Get a team membership record. Returns the complete membership details for a single team.
         
@@ -5062,18 +5083,19 @@ class AsanaApp(APIApplication):
         Tags:
             team, membership, retrieve, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/team_memberships/{team_membership_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_team_memberships(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, team: Annotated[Any, 'Globally unique identifier for the team.'] = None, user: Annotated[Any, 'A string identifying a user. This can either be the string "me", an email, or the gid of a user. This parameter must be used with the workspace parameter.'] = None, workspace: Annotated[Any, 'Globally unique identifier for the workspace. This parameter must be used with the user parameter.'] = None) -> dict[str, Any]:
+    def get_team_memberships(self, team: str | None = None, user: str | None = None, workspace: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve team membership records with pagination and optional field filtering.
         
@@ -5095,23 +5117,19 @@ class AsanaApp(APIApplication):
         Tags:
             team-memberships, pagination, api-call, retrieval, management, collaboration, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "team": team,
-                "user": user,
-                "workspace": workspace,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/team_memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('team', team), ('user', user), ('workspace', workspace), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_memberships_from_ateam(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_memberships_from_ateam(self, team_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated team memberships with optional field inclusion and response formatting.
         
@@ -5130,20 +5148,19 @@ class AsanaApp(APIApplication):
         Tags:
             team-memberships, pagination, api-client, get, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/teams/{team_gid}/team_memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_memberships_from_auser(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, workspace: Annotated[Any, '(Required) Globally unique identifier for the workspace.'] = None) -> dict[str, Any]:
+    def get_memberships_from_auser(self, user_gid: str, workspace: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieves memberships for a user, returning compact team membership records.
         
@@ -5163,21 +5180,19 @@ class AsanaApp(APIApplication):
         Tags:
             memberships, team, user-data, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "workspace": workspace,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/users/{user_gid}/team_memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('workspace', workspace), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_atime_period(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_atime_period(self, time_period_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a specific time period record with optional field inclusions and formatted output.
         
@@ -5194,18 +5209,19 @@ class AsanaApp(APIApplication):
         Tags:
             time-periods, get, record, api, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/time_periods/{time_period_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_time_periods(self, end_on: Annotated[Any, 'ISO 8601 date string'] = None, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, start_on: Annotated[Any, 'ISO 8601 date string'] = None, workspace: Annotated[Any, '(Required) Globally unique identifier for the workspace.'] = None) -> dict[str, Any]:
+    def get_time_periods(self, start_on: str | None = None, end_on: str | None = None, workspace: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve compact time period records based on specified date range and pagination parameters.
         
@@ -5227,23 +5243,19 @@ class AsanaApp(APIApplication):
         Tags:
             time-periods, pagination, api-client, data-retrieval, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "start_on": start_on,
-                "end_on": end_on,
-                "workspace": workspace,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/time_periods"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('start_on', start_on), ('end_on', end_on), ('workspace', workspace), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_time_tracking_entries_for_atask(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_time_tracking_entries_for_atask(self, task_gid: str, limit: str | None = None, offset: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated time tracking entries for a specific task.
         
@@ -5262,20 +5274,19 @@ class AsanaApp(APIApplication):
         Tags:
             time-tracking, entries, pagination, async-job, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/time_tracking_entries"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def create_atime_tracking_entry(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def create_atime_tracking_entry(self, task_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Create a new time tracking entry for a given task.
         
@@ -5293,22 +5304,23 @@ class AsanaApp(APIApplication):
         Tags:
             time-tracking, asynchronous, create-entry, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/tasks/{task_gid}/time_tracking_entries"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_atime_tracking_entry(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_atime_tracking_entry(self, time_tracking_entry_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves a complete time tracking entry record from the API, returning all available data in dictionary format.
         
@@ -5325,18 +5337,19 @@ class AsanaApp(APIApplication):
         Tags:
             time-tracking, get, api-client, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/time_tracking_entries/{time_tracking_entry_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_atime_tracking_entry(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_atime_tracking_entry(self, time_tracking_entry_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing time tracking entry by sending a PUT request with the specified fields.
         
@@ -5354,22 +5367,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, time-tracking, async_job, management, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/time_tracking_entries/{time_tracking_entry_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_atime_tracking_entry(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_atime_tracking_entry(self, time_tracking_entry_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Delete a specific time tracking entry via DELETE request to its URL.
         
@@ -5385,17 +5399,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, time-tracking, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/time_tracking_entries/{time_tracking_entry_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_objects_via_typeahead(self, count: Annotated[Any, 'The number of results to return. The default is 20 if this parameter is omitted, with a minimum of 1 and a maximum of 100. If there are fewer results found than requested, all will be returned.'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, query: Annotated[Any, 'The string that will be used to search for relevant objects. If an empty string is passed in, the API will return results.'] = None, resource_type: Annotated[Any, '(Required) The type of values the typeahead should return. You can choose from one of the following: `custom_field`, `goal`, `project`, `project_template`, `portfolio`, `tag`, `task`, `team`, and `user`. Note that unlike in the names of endpoints, the types listed here are in singular form (e.g. `task`). Using multiple types is not yet supported.'] = None, type: Annotated[Any, '*Deprecated: new integrations should prefer the resource_type field.*'] = None) -> dict[str, Any]:
+    def get_objects_via_typeahead(self, workspace_gid: str, opt_fields: str | None = None, resource_type: str | None = None, type: str | None = None, query: str | None = None, count: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves objects from a workspace using a typeahead search algorithm, providing a limited set of results quickly for auto-completion features.
         
@@ -5416,22 +5432,19 @@ class AsanaApp(APIApplication):
         Tags:
             typeahead, search, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "resource_type": resource_type,
-                "type": type,
-                "query": query,
-                "count": count,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/typeahead"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('resource_type', resource_type), ('type', type), ('query', query), ('count', count), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_users(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, team: Annotated[Any, 'The team ID to filter users on.'] = None, workspace: Annotated[Any, 'The workspace or organization ID to filter users on.'] = None) -> dict[str, Any]:
+    def get_multiple_users(self, opt_fields: str | None = None, workspace: str | None = None, team: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieves multiple user records from accessible workspaces and organizations with pagination options.
         
@@ -5452,22 +5465,19 @@ class AsanaApp(APIApplication):
         Tags:
             users, pagination, async_job, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "workspace": workspace,
-                "team": team,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/users"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('workspace', workspace), ('team', team), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_auser(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_auser(self, user_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Get a user record by ID, returning the full user details. Supports optional field inclusion and formatted output.
         
@@ -5484,18 +5494,19 @@ class AsanaApp(APIApplication):
         Tags:
             users, get, api, record, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/users/{user_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_auser_sfavorites(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, resource_type: Annotated[Any, '(Required) The resource type of favorites to be returned.'] = None, workspace: Annotated[Any, '(Required) The workspace in which to get favorites.'] = None) -> dict[str, Any]:
+    def get_auser_sfavorites(self, user_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None, resource_type: str | None = None, workspace: str | None = None) -> dict[str, Any]:
         """
         Get a user's favorites in the specified workspace and resource type, returning paginated results in the same order as Asana's sidebar.
         
@@ -5516,22 +5527,19 @@ class AsanaApp(APIApplication):
         Tags:
             user, favorites, pagination, workspace, get, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-                "resource_type": resource_type,
-                "workspace": workspace,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/users/{user_gid}/favorites"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset), ('resource_type', resource_type), ('workspace', workspace)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_users_in_ateam(self, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_users_in_ateam(self, team_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated list of team members, returning compact user records sorted alphabetically with a limit of 2000 results. For larger datasets, use the `/users` endpoint.
         
@@ -5549,19 +5557,19 @@ class AsanaApp(APIApplication):
         Tags:
             users, retrieve, pagination, team-management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/teams/{team_gid}/users"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_users_in_aworkspace_or_organization(self, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_users_in_aworkspace_or_organization(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated list of users in a workspace or organization, sorted alphabetically and limited to 2000 records. For larger datasets, use the `/users` endpoint.
         
@@ -5579,19 +5587,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, users, pagination, workspace, organization, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/users"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_auser_task_list(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_auser_task_list(self, user_task_list_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieves the full record for a user task list. Optionally includes additional fields and formats the response for readability.
         
@@ -5608,18 +5616,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, management, user-task, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/user_task_lists/{user_task_list_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_auser_stask_list(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, workspace: Annotated[Any, '(Required) The workspace in which to get the user task list.'] = None) -> dict[str, Any]:
+    def get_auser_stask_list(self, user_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, workspace: str | None = None) -> dict[str, Any]:
         """
         Fetches a user's task list from a specified workspace.
         
@@ -5637,19 +5646,19 @@ class AsanaApp(APIApplication):
         Tags:
             fetch, task-list, user-management, workspace, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "workspace": workspace,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/users/{user_gid}/user_task_list"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('workspace', workspace)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_webhooks(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, resource: Annotated[Any, 'Only return webhooks for the given resource.'] = None, workspace: Annotated[Any, '(Required) The workspace to query for webhooks in.'] = None) -> dict[str, Any]:
+    def get_multiple_webhooks(self, limit: str | None = None, offset: str | None = None, workspace: str | None = None, resource: str | None = None, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Get compact representations of all webhooks registered by the app for the authenticated user in a specific workspace.
         
@@ -5670,22 +5679,19 @@ class AsanaApp(APIApplication):
         Tags:
             get, webhooks, pagination, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "workspace": workspace,
-                "resource": resource,
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/webhooks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('workspace', workspace), ('resource', resource), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def establish_awebhook(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def establish_awebhook(self, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Initiates a webhook creation process with a confirmation handshake, requiring asynchronous server handling to validate the webhook subscription.
         
@@ -5703,22 +5709,23 @@ class AsanaApp(APIApplication):
         Tags:
             webhooks, async-handshake, important, api-integration
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/webhooks"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_awebhook(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_awebhook(self, webhook_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve the full record of a webhook including optional fields if specified.
         
@@ -5735,18 +5742,19 @@ class AsanaApp(APIApplication):
         Tags:
             webhook, get, async_job, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/webhooks/{webhook_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_awebhook(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_awebhook(self, webhook_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Update an existing webhook by making a PUT request and overwriting its filters with new data.
         
@@ -5764,22 +5772,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, webhook, important, http_request
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/webhooks/{webhook_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def delete_awebhook(self, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def delete_awebhook(self, webhook_gid: str, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Permanently deletes a webhook. Once deleted, no further requests will be issued, though in-flight requests might still be received.
         
@@ -5795,17 +5804,19 @@ class AsanaApp(APIApplication):
         Tags:
             delete, webhooks, api-management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/webhooks/{webhook_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_multiple_workspaces(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_multiple_workspaces(self, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Fetches multiple workspaces visible to the authorized user. Returns compact records with pagination support.
         
@@ -5824,20 +5835,19 @@ class AsanaApp(APIApplication):
         Tags:
             list, workspaces, pagination, api-call, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aworkspace(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aworkspace(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Get the full workspace record for a single workspace.
         
@@ -5854,18 +5864,19 @@ class AsanaApp(APIApplication):
         Tags:
             get, workspace, management, api-call, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def update_aworkspace(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def update_aworkspace(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Updates an existing workspace by modifying specified fields and returns the updated workspace record.
         
@@ -5883,22 +5894,23 @@ class AsanaApp(APIApplication):
         Tags:
             update, workspace, management, important, async-job
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._put(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._put(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def add_auser_to_aworkspace_or_organization(self, data: Annotated[dict[str, Any], ''] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def add_auser_to_aworkspace_or_organization(self, workspace_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Add a user to a workspace or organization by user ID or email and return the full user record.
         
@@ -5916,22 +5928,23 @@ class AsanaApp(APIApplication):
         Tags:
             add, management, user, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/addUser"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def remove_auser_from_aworkspace_or_organization(self, data: Annotated[dict[str, Any], ''] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def remove_auser_from_aworkspace_or_organization(self, workspace_gid: str, opt_pretty: str | None = None, data: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Remove a user from a workspace or organization. Requires admin privileges in the target workspace. Supports user identification by globally unique ID or email address.
         
@@ -5948,21 +5961,23 @@ class AsanaApp(APIApplication):
         Tags:
             remove, user-management, workspaces, organizations, admin, important
         """
-        request_body = {
-            "data": data,
+        request_body_payload = {
+            'data': data,
         }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, data=request_body, params=query_params)
+        request_body_payload = {k: v for k, v in request_body_payload.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/removeUser"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_pretty', opt_pretty)] if v is not None}
+        response = self._post(url, json=request_body_payload, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_aworkspace_membership(self, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_aworkspace_membership(self, workspace_membership_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None) -> dict[str, Any]:
         """
         Retrieve a workspace membership and return its complete workspace record.
         
@@ -5979,18 +5994,19 @@ class AsanaApp(APIApplication):
         Tags:
             workspace, membership, get, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspace_memberships/{workspace_membership_gid}"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_workspace_memberships_for_auser(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None) -> dict[str, Any]:
+    def get_workspace_memberships_for_auser(self, user_gid: str, opt_fields: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Fetches the compact workspace membership records for a user, allowing pagination via limit and offset parameters.
         
@@ -6009,20 +6025,19 @@ class AsanaApp(APIApplication):
         Tags:
             workspace, memberships, pagination, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/users/{user_gid}/workspace_memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
-    def get_the_workspace_memberships_for_aworkspace(self, limit: Annotated[Any, 'Results per page.\nThe number of objects to return per page. The value must be between 1 and 100.'] = None, offset: Annotated[Any, 'Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n*Note: You can only pass in an offset that was returned to you via a previously paginated request.*'] = None, opt_fields: Annotated[Any, 'This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include.'] = None, opt_pretty: Annotated[Any, 'Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging.'] = None, user: Annotated[Any, 'A string identifying a user. This can either be the string "me", an email, or the gid of a user.'] = None) -> dict[str, Any]:
+    def get_the_workspace_memberships_for_aworkspace(self, workspace_gid: str, opt_fields: str | None = None, user: str | None = None, opt_pretty: str | None = None, limit: str | None = None, offset: str | None = None) -> dict[str, Any]:
         """
         Retrieve paginated workspace membership records for a specified workspace, including optional field selection and user filtering.
         
@@ -6042,211 +6057,207 @@ class AsanaApp(APIApplication):
         Tags:
             workspace-memberships, pagination, filter, management, important
         """
-        path = ""
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "opt_fields": opt_fields,
-                "user": user,
-                "opt_pretty": opt_pretty,
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        path_segment = "/workspaces/{workspace_gid}/workspace_memberships"
+        url = f"{self.base_url.rstrip('/')}/{path_segment.lstrip('/')}"
+        query_params = {k: v for k, v in [('opt_fields', opt_fields), ('user', user), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
-        return response.json()
-
+        try:
+            return response.json()
+        except json.JSONDecodeError:
+            raise
+        except Exception as e:
+            raise e
 
     def list_tools(self):
         return [
-            
-            self.get_an_allocation,
-            self.update_an_allocation,
-            self.delete_an_allocation,
-            self.get_multiple_allocations,
-            self.create_an_allocation,
-            self.get_an_attachment,
-            self.delete_an_attachment,
-            self.get_attachments_from_an_object,
-            self.upload_an_attachment,
-            self.get_audit_log_events,
-            self.submit_parallel_requests,
+            self.add_acollaborator_to_agoal,
+            self.add_acustom_field_to_aportfolio,
+            self.add_acustom_field_to_aproject,
+            self.add_aportfolio_item,
+            self.add_aproject_to_atask,
+            self.add_asupporting_goal_relationship,
+            self.add_atag_to_atask,
+            self.add_auser_to_ateam,
+            self.add_auser_to_aworkspace_or_organization,
+            self.add_followers_to_aproject,
+            self.add_followers_to_atask,
+            self.add_task_to_section,
+            self.add_users_to_aportfolio,
+            self.add_users_to_aproject,
             self.create_acustom_field,
-            self.get_acustom_field,
-            self.update_acustom_field,
-            self.delete_acustom_field,
-            self.get_aworkspace_scustom_fields,
-            self.create_an_enum_option,
-            self.reorder_acustom_field_senum,
-            self.update_an_enum_option,
-            self.get_aproject_scustom_fields,
-            self.get_aportfolio_scustom_fields,
-            self.get_events_on_aresource,
-            self.get_agoal,
-            self.update_agoal,
-            self.delete_agoal,
-            self.get_goals,
             self.create_agoal,
             self.create_agoal_metric,
-            self.update_agoal_metric,
-            self.add_acollaborator_to_agoal,
-            self.remove_acollaborator_from_agoal,
-            self.get_parent_goals_from_agoal,
-            self.get_agoal_relationship,
-            self.update_agoal_relationship,
-            self.get_goal_relationships,
-            self.add_asupporting_goal_relationship,
-            self.removes_asupporting_goal_relationship,
-            self.get_ajob_by_id,
-            self.get_multiple_memberships,
             self.create_amembership,
-            self.get_amembership,
-            self.update_amembership,
-            self.delete_amembership,
+            self.create_an_allocation,
+            self.create_an_enum_option,
             self.create_an_organization_export_request,
-            self.get_details_on_an_org_export_request,
-            self.get_multiple_portfolios,
             self.create_aportfolio,
-            self.get_aportfolio,
-            self.update_aportfolio,
-            self.delete_aportfolio,
-            self.get_portfolio_items,
-            self.add_aportfolio_item,
-            self.remove_aportfolio_item,
-            self.add_acustom_field_to_aportfolio,
-            self.remove_acustom_field_from_aportfolio,
-            self.add_users_to_aportfolio,
-            self.remove_users_from_aportfolio,
-            self.get_multiple_portfolio_memberships,
-            self.get_aportfolio_membership,
-            self.get_memberships_from_aportfolio,
-            self.get_multiple_projects,
             self.create_aproject,
-            self.get_aproject,
-            self.update_aproject,
-            self.delete_aproject,
-            self.duplicate_aproject,
-            self.get_projects_atask_is_in,
-            self.get_ateam_sprojects,
-            self.create_aproject_in_ateam,
-            self.get_all_projects_in_aworkspace,
-            self.create_aproject_in_aworkspace,
-            self.add_acustom_field_to_aproject,
-            self.remove_acustom_field_from_aproject,
-            self.get_task_count_of_aproject,
-            self.add_users_to_aproject,
-            self.remove_users_from_aproject,
-            self.add_followers_to_aproject,
-            self.remove_followers_from_aproject,
-            self.create_aproject_template_from_aproject,
-            self.get_aproject_brief,
-            self.update_aproject_brief,
-            self.delete_aproject_brief,
             self.create_aproject_brief,
-            self.get_aproject_membership,
-            self.get_memberships_from_aproject,
-            self.get_aproject_status,
-            self.delete_aproject_status,
-            self.get_statuses_from_aproject,
+            self.create_aproject_in_ateam,
+            self.create_aproject_in_aworkspace,
             self.create_aproject_status,
-            self.get_aproject_template,
-            self.delete_aproject_template,
-            self.get_multiple_project_templates,
-            self.get_ateam_sproject_templates,
-            self.instantiate_aproject_from_aproject_template,
-            self.trigger_arule,
-            self.get_asection,
-            self.update_asection,
-            self.delete_asection,
-            self.get_sections_in_aproject,
+            self.create_aproject_template_from_aproject,
             self.create_asection_in_aproject,
-            self.add_task_to_section,
-            self.move_or_insert_sections,
-            self.get_astatus_update,
-            self.delete_astatus_update,
-            self.get_status_updates_from_an_object,
             self.create_astatus_update,
-            self.get_astory,
-            self.update_astory,
-            self.delete_astory,
-            self.get_stories_from_atask,
             self.create_astory_on_atask,
-            self.get_multiple_tags,
+            self.create_asubtask,
             self.create_atag,
-            self.get_atag,
-            self.update_atag,
-            self.delete_atag,
-            self.get_atask_stags,
-            self.get_tags_in_aworkspace,
             self.create_atag_in_aworkspace,
-            self.get_multiple_tasks,
             self.create_atask,
-            self.get_atask,
-            self.update_atask,
+            self.create_ateam,
+            self.create_atime_tracking_entry,
+            self.delete_acustom_field,
+            self.delete_agoal,
+            self.delete_amembership,
+            self.delete_an_allocation,
+            self.delete_an_attachment,
+            self.delete_aportfolio,
+            self.delete_aproject,
+            self.delete_aproject_brief,
+            self.delete_aproject_status,
+            self.delete_aproject_template,
+            self.delete_asection,
+            self.delete_astatus_update,
+            self.delete_astory,
+            self.delete_atag,
             self.delete_atask,
+            self.delete_atask_template,
+            self.delete_atime_tracking_entry,
+            self.delete_awebhook,
+            self.duplicate_aproject,
             self.duplicate_atask,
+            self.establish_awebhook,
+            self.get_acustom_field,
+            self.get_agoal,
+            self.get_agoal_relationship,
+            self.get_ajob_by_id,
+            self.get_all_projects_in_aworkspace,
+            self.get_amembership,
+            self.get_an_allocation,
+            self.get_an_attachment,
+            self.get_aportfolio,
+            self.get_aportfolio_membership,
+            self.get_aportfolio_scustom_fields,
+            self.get_aproject,
+            self.get_aproject_brief,
+            self.get_aproject_membership,
+            self.get_aproject_scustom_fields,
+            self.get_aproject_status,
+            self.get_aproject_template,
+            self.get_asection,
+            self.get_astatus_update,
+            self.get_astory,
+            self.get_atag,
+            self.get_atask,
+            self.get_atask_for_agiven_custom_id,
+            self.get_atask_stags,
+            self.get_atask_template,
+            self.get_ateam,
+            self.get_ateam_membership,
+            self.get_ateam_sproject_templates,
+            self.get_ateam_sprojects,
+            self.get_atime_period,
+            self.get_atime_tracking_entry,
+            self.get_attachments_from_an_object,
+            self.get_audit_log_events,
+            self.get_auser,
+            self.get_auser_sfavorites,
+            self.get_auser_stask_list,
+            self.get_auser_task_list,
+            self.get_awebhook,
+            self.get_aworkspace,
+            self.get_aworkspace_membership,
+            self.get_aworkspace_scustom_fields,
+            self.get_dependencies_from_atask,
+            self.get_dependents_from_atask,
+            self.get_details_on_an_org_export_request,
+            self.get_events_on_aresource,
+            self.get_goal_relationships,
+            self.get_goals,
+            self.get_memberships_from_aportfolio,
+            self.get_memberships_from_aproject,
+            self.get_memberships_from_ateam,
+            self.get_memberships_from_auser,
+            self.get_multiple_allocations,
+            self.get_multiple_memberships,
+            self.get_multiple_portfolio_memberships,
+            self.get_multiple_portfolios,
+            self.get_multiple_project_templates,
+            self.get_multiple_projects,
+            self.get_multiple_tags,
+            self.get_multiple_task_templates,
+            self.get_multiple_tasks,
+            self.get_multiple_users,
+            self.get_multiple_webhooks,
+            self.get_multiple_workspaces,
+            self.get_objects_via_typeahead,
+            self.get_parent_goals_from_agoal,
+            self.get_portfolio_items,
+            self.get_projects_atask_is_in,
+            self.get_sections_in_aproject,
+            self.get_status_updates_from_an_object,
+            self.get_statuses_from_aproject,
+            self.get_stories_from_atask,
+            self.get_subtasks_from_atask,
+            self.get_tags_in_aworkspace,
+            self.get_task_count_of_aproject,
             self.get_tasks_from_aproject,
             self.get_tasks_from_asection,
             self.get_tasks_from_atag,
             self.get_tasks_from_auser_task_list,
-            self.get_subtasks_from_atask,
-            self.create_asubtask,
-            self.set_the_parent_of_atask,
-            self.get_dependencies_from_atask,
-            self.set_dependencies_for_atask,
-            self.unlink_dependencies_from_atask,
-            self.get_dependents_from_atask,
-            self.set_dependents_for_atask,
-            self.unlink_dependents_from_atask,
-            self.add_aproject_to_atask,
-            self.remove_aproject_from_atask,
-            self.add_atag_to_atask,
-            self.remove_atag_from_atask,
-            self.add_followers_to_atask,
-            self.remove_followers_from_atask,
-            self.get_atask_for_agiven_custom_id,
-            self.search_tasks_in_aworkspace,
-            self.get_multiple_task_templates,
-            self.get_atask_template,
-            self.delete_atask_template,
-            self.instantiate_atask_from_atask_template,
-            self.create_ateam,
-            self.get_ateam,
-            self.update_ateam,
-            self.get_teams_in_aworkspace,
-            self.get_teams_for_auser,
-            self.add_auser_to_ateam,
-            self.remove_auser_from_ateam,
-            self.get_ateam_membership,
             self.get_team_memberships,
-            self.get_memberships_from_ateam,
-            self.get_memberships_from_auser,
-            self.get_atime_period,
+            self.get_teams_for_auser,
+            self.get_teams_in_aworkspace,
+            self.get_the_workspace_memberships_for_aworkspace,
             self.get_time_periods,
             self.get_time_tracking_entries_for_atask,
-            self.create_atime_tracking_entry,
-            self.get_atime_tracking_entry,
-            self.update_atime_tracking_entry,
-            self.delete_atime_tracking_entry,
-            self.get_objects_via_typeahead,
-            self.get_multiple_users,
-            self.get_auser,
-            self.get_auser_sfavorites,
             self.get_users_in_ateam,
             self.get_users_in_aworkspace_or_organization,
-            self.get_auser_task_list,
-            self.get_auser_stask_list,
-            self.get_multiple_webhooks,
-            self.establish_awebhook,
-            self.get_awebhook,
-            self.update_awebhook,
-            self.delete_awebhook,
-            self.get_multiple_workspaces,
-            self.get_aworkspace,
-            self.update_aworkspace,
-            self.add_auser_to_aworkspace_or_organization,
-            self.remove_auser_from_aworkspace_or_organization,
-            self.get_aworkspace_membership,
             self.get_workspace_memberships_for_auser,
-            self.get_the_workspace_memberships_for_aworkspace
-        ] 
+            self.instantiate_aproject_from_aproject_template,
+            self.instantiate_atask_from_atask_template,
+            self.move_or_insert_sections,
+            self.remove_acollaborator_from_agoal,
+            self.remove_acustom_field_from_aportfolio,
+            self.remove_acustom_field_from_aproject,
+            self.remove_aportfolio_item,
+            self.remove_aproject_from_atask,
+            self.remove_atag_from_atask,
+            self.remove_auser_from_ateam,
+            self.remove_auser_from_aworkspace_or_organization,
+            self.remove_followers_from_aproject,
+            self.remove_followers_from_atask,
+            self.remove_users_from_aportfolio,
+            self.remove_users_from_aproject,
+            self.removes_asupporting_goal_relationship,
+            self.reorder_acustom_field_senum,
+            self.search_tasks_in_aworkspace,
+            self.set_dependencies_for_atask,
+            self.set_dependents_for_atask,
+            self.set_the_parent_of_atask,
+            self.submit_parallel_requests,
+            self.trigger_arule,
+            self.unlink_dependencies_from_atask,
+            self.unlink_dependents_from_atask,
+            self.update_acustom_field,
+            self.update_agoal,
+            self.update_agoal_metric,
+            self.update_agoal_relationship,
+            self.update_amembership,
+            self.update_an_allocation,
+            self.update_an_enum_option,
+            self.update_aportfolio,
+            self.update_aproject,
+            self.update_aproject_brief,
+            self.update_asection,
+            self.update_astory,
+            self.update_atag,
+            self.update_atask,
+            self.update_ateam,
+            self.update_atime_tracking_entry,
+            self.update_awebhook,
+            self.update_aworkspace,
+            self.upload_an_attachment
+        ]
