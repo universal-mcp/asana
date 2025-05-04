@@ -1,10 +1,10 @@
-# AsanaApp MCP Server
+# Asana MCP Server
 
-An MCP Server for the AsanaApp API.
+An MCP Server for the Asana API.
 
 ## 🛠️ Tool List
 
-This is automatically generated from OpenAPI schema for the AsanaApp API.
+This is automatically generated from OpenAPI schema for the Asana API.
 
 
 | Tool | Description |
@@ -197,39 +197,3 @@ This is automatically generated from OpenAPI schema for the AsanaApp API.
 | `get_aworkspace_membership` | Retrieve a workspace membership and return its complete workspace record. |
 | `get_workspace_memberships_for_auser` | Fetches the compact workspace membership records for a user, allowing pagination via limit and offset parameters. |
 | `get_the_workspace_memberships_for_aworkspace` | Retrieve paginated workspace membership records for a specified workspace, including optional field selection and user filtering. |
-
-
-## 📁 Project Structure
-
-The generated project has a standard layout:
-```
-.
-├── src/                  # Source code directory
-│   └── universal_mcp_asanaapp/
-│       ├── __init__.py
-│       └── mcp.py        # Server is launched here
-│       └── app.py        # Application tools are defined here
-├── tests/                # Directory for project tests
-├── .env                  # Environment variables (for local development)
-├── pyproject.toml        # Project dependencies managed by uv
-├── README.md             # This file
-```
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
----
-
-_This project was generated using **MCP CLI** — Happy coding! 🚀_
-
-## Usage
-
-- Login to AgentR
-- Follow the quickstart guide to setup MCP Server for your client
-- Visit Apps Store and enable the AsanaApp app
-- Restart the MCP Server
-
-### Local Development
-
-- Follow the README to test with the local MCP Server 
