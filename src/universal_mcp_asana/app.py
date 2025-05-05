@@ -9,17 +9,19 @@ class AsanaApp(APIApplication):
 
     def get_an_allocation(self, allocation_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a complete allocation record for a single allocation.
-        
+        Retrieves details about an allocation by its GUID using the API endpoint "/allocations/{allocation_gid}" with optional fields and formatting controlled by query parameters "opt_fields" and "opt_pretty".
+
         Args:
-            opt_fields: Optional fields to include in the response. Pass a comma-separated list to include additional properties.
-            opt_pretty: Returns the response in a 'pretty' format, useful for debugging.
-        
+            allocation_gid (string): allocation_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'assignee,assignee.name,created_by,created_by.name,effort,effort.type,effort.value,end_date,parent,parent.name,resource_subtype,start_date'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the allocation record.
-        
+            dict[str, Any]: Successfully retrieved the record for a single allocation.
+
         Tags:
-            allocation, management, important
+            Allocations
         """
         if allocation_gid is None:
             raise ValueError("Missing required parameter 'allocation_gid'")
@@ -31,21 +33,37 @@ class AsanaApp(APIApplication):
 
     def update_an_allocation(self, allocation_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing allocation by making a PUT request. Only specified fields are updated, and the complete updated allocation record is returned.
-        
+        Updates or creates a resource identified by the allocation GID at the "/allocations/{allocation_gid}" path using the PUT method.
+
         Args:
-            data: Dictionary containing fields to update. Only fields provided here will be changed.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Boolean to get the response in a formatted, human-readable format.
-        
+            allocation_gid (string): allocation_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'assignee,assignee.name,created_by,created_by.name,effort,effort.type,effort.value,end_date,parent,parent.name,resource_subtype,start_date'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "assignee": "Duis sit et quis tempor",
+                    "effort": {
+                      "type": "percent",
+                      "value": 50
+                    },
+                    "end_date": "2024-02-28",
+                    "gid": "12345",
+                    "parent": "proiden",
+                    "resource_type": "task",
+                    "start_date": "2024-02-28"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the complete updated allocation record.
-        
-        Raises:
-            HTTPError: Raised if there is a problem with the request, such as a 4xx or 5xx status code.
-        
+            dict[str, Any]: Successfully updated the allocation.
+
         Tags:
-            update, allocation, important, management
+            Allocations
         """
         if allocation_gid is None:
             raise ValueError("Missing required parameter 'allocation_gid'")
@@ -61,19 +79,18 @@ class AsanaApp(APIApplication):
 
     def delete_an_allocation(self, allocation_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific allocation by making a DELETE request to its URL and returns an empty data record upon success.
-        
+        Deletes the specified allocation by its global identifier and returns a status code indicating success or failure.
+
         Args:
-            opt_pretty: Provides 'pretty' output formatting for the response. Enables proper line breaking and indentation in JSON output, which increases response size and processing time. Recommended for debugging purposes only.
-        
+            allocation_gid (string): allocation_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            dict[str, Any]: An empty dictionary representing the deleted allocation's data record.
-        
-        Raises:
-            HTTPError: Raises HTTP errors for unsuccessful API requests (4xx/5xx status codes).
-        
+            dict[str, Any]: Successfully deleted the specified allocation.
+
         Tags:
-            delete, allocations, management, important
+            Allocations
         """
         if allocation_gid is None:
             raise ValueError("Missing required parameter 'allocation_gid'")
@@ -85,25 +102,26 @@ class AsanaApp(APIApplication):
 
     def get_multiple_allocations(self, parent=None, assignee=None, workspace=None, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Fetches a list of allocations filtered by specific parameters like project, user, and pagination details.
-        
+        Retrieves a list of resource allocations filtered by parent, assignee, workspace, and pagination parameters.
+
         Args:
-            assignee: Globally unique identifier for the user the allocation is assigned to.
-            limit: Number of objects to return per page (between 1 and 100).
-            offset: Offset token for pagination to retrieve the next page of results.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Flag to provide the response in a pretty format (for debugging purposes).
-            parent: Globally unique identifier for the project to filter allocations by.
-            workspace: Globally unique identifier for the workspace.
-        
+            parent (string): Globally unique identifier for the project to filter allocations by. Example: '77688'.
+            assignee (string): Globally unique identifier for the user the allocation is assigned to. Example: '12345'.
+            workspace (string): Globally unique identifier for the workspace. Example: '98765'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'assignee,assignee.name,created_by,created_by.name,effort,effort.type,effort.value,end_date,offset,parent,parent.name,path,resource_subtype,start_date,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the list of filtered allocations.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails (e.g., due to an invalid response code).
-        
+            dict[str, Any]: Successfully retrieved the requested allocations.
+
         Tags:
-            fetch, allocations, pagination, management, important
+            Allocations
         """
         url = f"{self.base_url}/allocations"
         query_params = {k: v for k, v in [('parent', parent), ('assignee', assignee), ('workspace', workspace), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -113,21 +131,36 @@ class AsanaApp(APIApplication):
 
     def create_an_allocation(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new allocation and returns its full record.
-        
+        Creates a new allocation using the API and returns a successful response upon completion, with optional fields and pretty printing available through query parameters.
+
         Args:
-            data: Dictionary containing allocation data. Required fields should be provided here.
-            opt_fields: Optional comma-separated list of fields to include in the response.
-            opt_pretty: Provides formatted output for better readability during debugging (increases response size).
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'assignee,assignee.name,created_by,created_by.name,effort,effort.type,effort.value,end_date,parent,parent.name,resource_subtype,start_date'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "assignee": "consectetur enim est ea",
+                    "effort": {
+                      "type": "hours",
+                      "value": 50
+                    },
+                    "end_date": "2024-02-28",
+                    "gid": "12345",
+                    "parent": "minim officia est esse",
+                    "resource_type": "task",
+                    "start_date": "2024-02-28"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the full record of the newly created allocation.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid data or server errors.
-        
+            dict[str, Any]: Successfully created a new allocation.
+
         Tags:
-            create, allocation, http-post, management, important
+            Allocations
         """
         request_body = {
             'data': data,
@@ -141,20 +174,19 @@ class AsanaApp(APIApplication):
 
     def get_an_attachment(self, attachment_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Get the full record for a single attachment, optionally including additional fields and pretty-printed output.
-        
+        Retrieves details for a specific attachment using its identifier, with optional fields and pretty-printed responses.
+
         Args:
-            opt_fields: Optional comma-separated list of properties to include in the response, beyond the default set.
-            opt_pretty: Flag to provide 'pretty' output with proper line breaks and indentation, primarily useful for debugging.
-        
+            attachment_gid (string): attachment_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'connected_to_app,created_at,download_url,host,name,parent,parent.created_by,parent.name,parent.resource_subtype,permanent_url,resource_subtype,size,view_url'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the attachment record, formatted as requested.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the record for a single attachment.
+
         Tags:
-            attachments, fetch, get, api-call, important
+            Attachments
         """
         if attachment_gid is None:
             raise ValueError("Missing required parameter 'attachment_gid'")
@@ -166,19 +198,18 @@ class AsanaApp(APIApplication):
 
     def delete_an_attachment(self, attachment_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific, existing attachment and returns an empty data record.
-        
+        Deletes an attachment identified by the attachment GID using the DELETE method.
+
         Args:
-            opt_pretty: Provides the response in a 'pretty' format. This means proper line breaking and indentation for JSON, which is advisable for debugging only.
-        
+            attachment_gid (string): attachment_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            An empty data record as a dictionary.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully deleted the specified attachment.
+
         Tags:
-            delete, attachment, management
+            Attachments
         """
         if attachment_gid is None:
             raise ValueError("Missing required parameter 'attachment_gid'")
@@ -190,23 +221,24 @@ class AsanaApp(APIApplication):
 
     def get_attachments_from_an_object(self, limit=None, offset=None, parent=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a list of attachments from a specified object, which can be a project, project brief, or task.
-        
+        Retrieves a list of attachments using the "GET" method at the "/attachments" endpoint, allowing optional filtering by limit, offset, parent, and additional fields for custom output.
+
         Args:
-            limit: Results per page. The number of objects to return per page (1-100). Defaults to None.
-            offset: Offset token. Used for pagination; must be obtained from a previous API call.
-            opt_fields: Optional properties to include. Pass a comma-separated list of properties to include.
-            opt_pretty: Provides pretty output. Useful for debugging, makes JSON more readable but increases response size.
-            parent: Globally unique identifier for the object (project, project brief, or task). Required.
-        
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            parent (string): (Required) Globally unique identifier for object to fetch statuses from. Must be a GID for a `project`, `project_brief`, or `task`. Example: '159874'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'connected_to_app,created_at,download_url,host,name,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permanent_url,resource_subtype,size,uri,view_url'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing compact records for all attachments on the object.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the API request fails with an HTTP error.
-        
+            dict[str, Any]: Successfully retrieved the specified object's attachments.
+
         Tags:
-            attachments, pagination, important
+            Attachments
         """
         url = f"{self.base_url}/attachments"
         query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('parent', parent), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -216,26 +248,29 @@ class AsanaApp(APIApplication):
 
     def get_audit_log_events(self, workspace_gid, start_at=None, end_at=None, event_type=None, actor_type=None, actor_gid=None, resource_gid=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve audit log events from your domain, with options to filter by various criteria such as actor ID, event type, and time range.
-        
+        Retrieves a list of audit log events for a specified workspace, allowing filtering by time range, event type, actor type, and other parameters.
+
         Args:
-            actor_gid: Filter to events triggered by the actor with this ID.
-            actor_type: Filter to events with an actor of this type. Used when actor_gid is not provided.
-            end_at: Filter to events created before this time (exclusive).
-            event_type: Filter to events of this type. Refer to supported audit log events for full list.
-            limit: Results per page. Must be between 1 and 100.
-            offset: Offset token for pagination. Returned in the API response.
-            resource_gid: Filter to events with this resource ID.
-            start_at: Filter to events created after this time (inclusive).
-        
+            workspace_gid (string): workspace_gid
+            start_at (string): Filter to events created after this time (inclusive). Example: '1983-07-10T20:31:48.443Z'.
+            end_at (string): Filter to events created before this time (exclusive). Example: '1983-07-10T20:31:48.443Z'.
+            event_type (string): Filter to events of this type.
+        Refer to the [supported audit log events](/docs/audit-log-events#supported-audit-log-events) for a full list of values. Example: 'eiusmod irure commodo'.
+            actor_type (string): Filter to events with an actor of this type.
+        This only needs to be included if querying for actor types without an ID. If `actor_gid` is included, this should be excluded. Example: 'external_administrator'.
+            actor_gid (string): Filter to events triggered by the actor with this ID. Example: 'eiusmod irure commodo'.
+            resource_gid (string): Filter to events with this resource ID. Example: 'eiusmod irure commodo'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing paginated audit log events. Events are sorted by creation time in ascending order.
-        
-        Raises:
-            HTTPError: If the request to the API fails due to an HTTP error.
-        
+            dict[str, Any]: AuditLogEvents were successfully retrieved.
+
         Tags:
-            audit, log, api, pagination, filtering, important, management
+            Audit log API
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -247,21 +282,60 @@ class AsanaApp(APIApplication):
 
     def submit_parallel_requests(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Submits multiple API requests in parallel to Asana's batch endpoints, enabling efficient batch processing of operations.
-        
+        Processes a batch of API requests in a single call, allowing for efficient execution of multiple operations defined at the "/batch" path using the "POST" method.
+
         Args:
-            data: Dictionary containing request payload data to be submitted to Asana's batch API endpoints.
-            opt_fields: Comma-separated list of optional fields to include in response. Specify properties to return when default compact responses are insufficient.
-            opt_pretty: Enables pretty-printed JSON output at the cost of performance. Recommended only for debugging.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'body,headers,status_code'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "actions": [
+                      {
+                        "data": {
+                          "assignee": "me",
+                          "workspace": "1337"
+                        },
+                        "method": "get",
+                        "options": {
+                          "fields": [
+                            "name",
+                            "notes",
+                            "completed"
+                          ],
+                          "limit": 3
+                        },
+                        "relative_path": "/tasks/123"
+                      },
+                      {
+                        "data": {
+                          "assignee": "me",
+                          "workspace": "1337"
+                        },
+                        "method": "get",
+                        "options": {
+                          "fields": [
+                            "name",
+                            "notes",
+                            "completed"
+                          ],
+                          "limit": 3
+                        },
+                        "relative_path": "/tasks/123"
+                      }
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing API response data parsed from JSON, including results from parallel requests processing.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when API request fails with non-2XX status code, typically indicating authorization errors (4XX) or server issues (5XX).
-        
+            dict[str, Any]: Successfully completed the requested batch API operations.
+
         Tags:
-            batch, async-job, request, api, asana, parallel-processing, important
+            Batch API
         """
         request_body = {
             'data': data,
@@ -275,21 +349,95 @@ class AsanaApp(APIApplication):
 
     def create_acustom_field(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new custom field in a workspace with a unique name and valid type.
-        
+        Creates a new custom field at the "/custom_fields" endpoint using the "POST" method, allowing for optional parameters to specify additional fields or formatting options.
+
         Args:
-            data: Dictionary containing custom field definition. Must include required fields for creation according to API specifications.
-            opt_fields: Comma-separated list of optional properties to include in response. Excluded properties return in compact resource by default.
-            opt_pretty: Enables formatted JSON output for readability during debugging.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'asana_created_field,created_by,created_by.name,currency_code,custom_label,custom_label_position,date_value,date_value.date,date_value.date_time,description,display_value,enabled,enum_options,enum_options.color,enum_options.enabled,enum_options.name,enum_value,enum_value.color,enum_value.enabled,enum_value.name,format,has_notifications_enabled,id_prefix,is_formula_field,is_global_to_workspace,is_value_read_only,multi_enum_values,multi_enum_values.color,multi_enum_values.enabled,multi_enum_values.name,name,number_value,people_value,people_value.name,precision,representation_type,resource_subtype,text_value,type'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "asana_created_field": "priority",
+                    "currency_code": "EUR",
+                    "custom_label": "gold pieces",
+                    "custom_label_position": "suffix",
+                    "date_value": {
+                      "date": "2024-08-23",
+                      "date_time": "2024-08-23T22:00:00.000Z"
+                    },
+                    "description": "Development team priority",
+                    "display_value": "blue",
+                    "enabled": true,
+                    "enum_options": [
+                      {
+                        "color": "blue",
+                        "enabled": true,
+                        "gid": "12345",
+                        "name": "Low",
+                        "resource_type": "task"
+                      },
+                      {
+                        "color": "blue",
+                        "enabled": true,
+                        "gid": "12345",
+                        "name": "Low",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "enum_value": {
+                      "color": "blue",
+                      "enabled": true,
+                      "gid": "12345",
+                      "name": "Low",
+                      "resource_type": "task"
+                    },
+                    "format": "custom",
+                    "gid": "12345",
+                    "has_notifications_enabled": true,
+                    "id_prefix": "ID",
+                    "is_formula_field": false,
+                    "is_global_to_workspace": true,
+                    "multi_enum_values": [
+                      {
+                        "color": "blue",
+                        "enabled": true,
+                        "gid": "12345",
+                        "name": "Low",
+                        "resource_type": "task"
+                      },
+                      {
+                        "color": "blue",
+                        "enabled": true,
+                        "gid": "12345",
+                        "name": "Low",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "name": "Status",
+                    "number_value": 5.2,
+                    "owned_by_app": false,
+                    "people_value": [
+                      "12345"
+                    ],
+                    "precision": 2,
+                    "representation_type": "number",
+                    "resource_subtype": "text",
+                    "resource_type": "task",
+                    "text_value": "Some Value",
+                    "type": "date",
+                    "workspace": "1331"
+                  }
+                }
+                ```
+
         Returns:
-            Full record of the newly created custom field as a dictionary containing all configured properties.
-        
-        Raises:
-            HTTPError: Raised for invalid requests, name conflicts with existing fields, or invalid custom field types (e.g., non-supported type values).
-        
+            dict[str, Any]: Custom field successfully created.
+
         Tags:
-            create, custom-field, workspace, management, important
+            Custom fields
         """
         request_body = {
             'data': data,
@@ -303,20 +451,19 @@ class AsanaApp(APIApplication):
 
     def get_acustom_field(self, custom_field_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve complete metadata definition of a custom field, including type-specific properties and behaviors.
-        
+        Retrieves the details of a specific custom field using its unique identifier and supports optional query parameters for additional field data and formatted output.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include (default excludes some properties)
-            opt_pretty: Enable pretty-printed JSON output for human readability (increases response time and size)
-        
+            custom_field_gid (string): custom_field_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'asana_created_field,created_by,created_by.name,currency_code,custom_label,custom_label_position,date_value,date_value.date,date_value.date_time,description,display_value,enabled,enum_options,enum_options.color,enum_options.enabled,enum_options.name,enum_value,enum_value.color,enum_value.enabled,enum_value.name,format,has_notifications_enabled,id_prefix,is_formula_field,is_global_to_workspace,is_value_read_only,multi_enum_values,multi_enum_values.color,multi_enum_values.enabled,multi_enum_values.name,name,number_value,people_value,people_value.name,precision,representation_type,resource_subtype,text_value,type'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing full custom field metadata with requested fields included
-        
-        Raises:
-            HTTPError: If API request fails due to server error or invalid parameters
-        
+            dict[str, Any]: Successfully retrieved the complete definition of a custom field’s metadata.
+
         Tags:
-            custom-fields, metadata, get, api, resource, important
+            Custom fields
         """
         if custom_field_gid is None:
             raise ValueError("Missing required parameter 'custom_field_gid'")
@@ -328,22 +475,96 @@ class AsanaApp(APIApplication):
 
     def update_acustom_field(self, custom_field_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing custom field with provided data, returning the complete updated record. Only specified fields are modified, preserving existing values.
-        
+        Updates the specified custom field's configuration for the given object (e.g., project) and returns the modified resource.
+
         Args:
-            data: Dictionary containing custom field properties to update. Unspecified fields remain unchanged.
-            opt_fields: Comma-separated string of optional properties to include in the response.
-            opt_pretty: Boolean flag for formatted JSON output (increases response size).
-        
+            custom_field_gid (string): custom_field_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'asana_created_field,created_by,created_by.name,currency_code,custom_label,custom_label_position,date_value,date_value.date,date_value.date_time,description,display_value,enabled,enum_options,enum_options.color,enum_options.enabled,enum_options.name,enum_value,enum_value.color,enum_value.enabled,enum_value.name,format,has_notifications_enabled,id_prefix,is_formula_field,is_global_to_workspace,is_value_read_only,multi_enum_values,multi_enum_values.color,multi_enum_values.enabled,multi_enum_values.name,name,number_value,people_value,people_value.name,precision,representation_type,resource_subtype,text_value,type'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "asana_created_field": "priority",
+                    "currency_code": "EUR",
+                    "custom_label": "gold pieces",
+                    "custom_label_position": "suffix",
+                    "date_value": {
+                      "date": "2024-08-23",
+                      "date_time": "2024-08-23T22:00:00.000Z"
+                    },
+                    "description": "Development team priority",
+                    "display_value": "blue",
+                    "enabled": true,
+                    "enum_options": [
+                      {
+                        "color": "blue",
+                        "enabled": true,
+                        "gid": "12345",
+                        "name": "Low",
+                        "resource_type": "task"
+                      },
+                      {
+                        "color": "blue",
+                        "enabled": true,
+                        "gid": "12345",
+                        "name": "Low",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "enum_value": {
+                      "color": "blue",
+                      "enabled": true,
+                      "gid": "12345",
+                      "name": "Low",
+                      "resource_type": "task"
+                    },
+                    "format": "custom",
+                    "gid": "12345",
+                    "has_notifications_enabled": true,
+                    "id_prefix": "ID",
+                    "is_formula_field": false,
+                    "is_global_to_workspace": true,
+                    "multi_enum_values": [
+                      {
+                        "color": "blue",
+                        "enabled": true,
+                        "gid": "12345",
+                        "name": "Low",
+                        "resource_type": "task"
+                      },
+                      {
+                        "color": "blue",
+                        "enabled": true,
+                        "gid": "12345",
+                        "name": "Low",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "name": "Status",
+                    "number_value": 5.2,
+                    "owned_by_app": false,
+                    "people_value": [
+                      "12345"
+                    ],
+                    "precision": 2,
+                    "representation_type": "number",
+                    "resource_subtype": "text",
+                    "resource_type": "task",
+                    "text_value": "Some Value",
+                    "type": "date",
+                    "workspace": "1331"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing full updated custom field record including all specified fields.
-        
-        Raises:
-            HTTPError: Raised for failed API requests (4XX/5XX status codes), typically due to invalid input data or authorization issues.
-            ValueError: May occur if attempting to modify read-only fields like 'type' or locked fields without proper permissions.
-        
+            dict[str, Any]: The custom field was successfully updated.
+
         Tags:
-            custom-fields, update, management, important, api
+            Custom fields
         """
         if custom_field_gid is None:
             raise ValueError("Missing required parameter 'custom_field_gid'")
@@ -359,19 +580,18 @@ class AsanaApp(APIApplication):
 
     def delete_acustom_field(self, custom_field_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific existing custom field using a DELETE request to its URL. Locked fields can only be deleted by the locking user.
-        
+        Deletes a specific custom field by its globally unique identifier (GID) and returns an empty response upon success.
+
         Args:
-            opt_pretty: If True, returns formatted JSON response (recommended for debugging only). Adds line breaks and indentation, increasing response size and processing time.
-        
+            custom_field_gid (string): custom_field_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            dict[str, Any]: Empty dictionary on successful deletion ({}), representing an empty data record
-        
-        Raises:
-            requests.HTTPError: Raised for invalid permissions (locked fields deleted by non-owner), non-existent fields, or server errors
-        
+            dict[str, Any]: The custom field was successfully deleted.
+
         Tags:
-            delete, custom-field, api-client, management, important
+            Custom fields
         """
         if custom_field_gid is None:
             raise ValueError("Missing required parameter 'custom_field_gid'")
@@ -383,22 +603,24 @@ class AsanaApp(APIApplication):
 
     def get_aworkspace_scustom_fields(self, workspace_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieves a list of compact representations of custom fields within a workspace.
-        
+        Retrieves a list of custom fields for a specified workspace using the Asana API, allowing for optional filtering and formatting of the response.
+
         Args:
-            limit: Results per page. The number of objects to return per page. The value must be between 1 and 100.
-            offset: Offset token. An offset to the next page returned by the API. Used for pagination.
-            opt_fields: Optional fields to include in the response. A comma-separated list of properties.
-            opt_pretty: Provides the response in a 'pretty' format: properly formatted JSON for readability.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'asana_created_field,created_by,created_by.name,currency_code,custom_label,custom_label_position,date_value,date_value.date,date_value.date_time,description,display_value,enabled,enum_options,enum_options.color,enum_options.enabled,enum_options.name,enum_value,enum_value.color,enum_value.enabled,enum_value.name,format,has_notifications_enabled,id_prefix,is_formula_field,is_global_to_workspace,is_value_read_only,multi_enum_values,multi_enum_values.color,multi_enum_values.enabled,multi_enum_values.name,name,number_value,offset,path,people_value,people_value.name,precision,representation_type,resource_subtype,text_value,type,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing the list of custom fields.
-        
-        Raises:
-            requests.HTTPError: Raised if there is an HTTP request issue, such as a 4xx or 5xx status code.
-        
+            dict[str, Any]: Successfully retrieved all custom fields for the given workspace.
+
         Tags:
-            custom-fields, list, management, important
+            Custom fields
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -410,21 +632,34 @@ class AsanaApp(APIApplication):
 
     def create_an_enum_option(self, custom_field_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates an enum option for a custom field, adds it to the field's enum list, and returns the full record of the new option.
-        
+        Creates a new enum option for a custom field and allows specifying its position relative to existing options.
+
         Args:
-            data: A dictionary containing the data required to create the enum option. Must include mandatory fields for enum creation.
-            opt_fields: Comma-separated list of optional properties to include in the response. By default, the endpoint returns a compact resource.
-            opt_pretty: When True, formats the JSON response with indentation and line breaks for improved readability (use only during debugging due to performance impact).
-        
+            custom_field_gid (string): custom_field_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,enabled,name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "color": "blue",
+                    "enabled": true,
+                    "gid": "12345",
+                    "insert_after": "12345",
+                    "insert_before": "12345",
+                    "name": "Low",
+                    "resource_type": "task"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing the full record of the newly created enum option.
-        
-        Raises:
-            HTTPError: Raised if the API request fails, e.g., due to exceeding the 500-enum-option limit, unauthorized modification of locked fields, or invalid input data.
-        
+            dict[str, Any]: Custom field enum option successfully created.
+
         Tags:
-            custom-fields, enum-options, create, management, important
+            Custom fields
         """
         if custom_field_gid is None:
             raise ValueError("Missing required parameter 'custom_field_gid'")
@@ -440,22 +675,30 @@ class AsanaApp(APIApplication):
 
     def reorder_acustom_field_senum(self, custom_field_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Reorders a custom field's enum. Moves an enum option to be either before or after another specified enum option.
-        
+        Reorders the enum options for a custom field using the Asana API by inserting an enum option at a specified position, allowing customization of the options' order.
+
         Args:
-            data: The data used to update the custom field; an annotated dictionary with potential enum reordering specifications.
-            opt_fields: Optional fields to include in the response, specified as a comma-separated list of property names.
-            opt_pretty: Boolean indicating whether the response should be in a pretty format (e.g., JSON with line breaks and indentation).
-        
+            custom_field_gid (string): custom_field_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,enabled,name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "after_enum_option": "12345",
+                    "before_enum_option": "12345",
+                    "enum_option": "97285"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing the updated custom field data.
-        
-        Raises:
-            RequestException: Raised if there is an issue with the HTTP request (e.g., network errors or server errors).
-            HTTPError: Raised if the HTTP response indicates an error (e.g., a non-successful status code).
-        
+            dict[str, Any]: Custom field enum option successfully reordered.
+
         Tags:
-            custom_fields, enum_reorder, management, important
+            Custom fields
         """
         if custom_field_gid is None:
             raise ValueError("Missing required parameter 'custom_field_gid'")
@@ -471,21 +714,32 @@ class AsanaApp(APIApplication):
 
     def update_an_enum_option(self, enum_option_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing enum option for custom fields and returns the full record. Locked fields can only be updated by the locking user.
-        
+        Updates an existing enum option's details in the custom field and returns the modified enum option.
+
         Args:
-            data: Dictionary containing the updated enum option data
-            opt_fields: Comma-separated list of optional properties to include. Excludes some properties by default.
-            opt_pretty: Provides formatted output. Increases response time and size, recommended for debugging.
-        
+            enum_option_gid (string): enum_option_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,enabled,name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "color": "blue",
+                    "enabled": true,
+                    "gid": "12345",
+                    "name": "Low",
+                    "resource_type": "task"
+                  }
+                }
+                ```
+
         Returns:
-            Full record of the updated enum option as a dictionary
-        
-        Raises:
-            HTTPError: Raised on API request failure (e.g., invalid data, insufficient permissions)
-        
+            dict[str, Any]: Successfully updated the specified custom field enum.
+
         Tags:
-            update, enum, custom-fields, async-job, api-call, important
+            Custom fields
         """
         if enum_option_gid is None:
             raise ValueError("Missing required parameter 'enum_option_gid'")
@@ -501,22 +755,24 @@ class AsanaApp(APIApplication):
 
     def get_aproject_scustom_fields(self, project_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Fetches and returns a project's custom fields settings, allowing pagination and optional inclusion of additional fields.
-        
+        Retrieves custom field settings for a project using a specified project GID, allowing for optional filtering by fields, formatting, and pagination.
+
         Args:
-            limit: Results per page. The number of objects to return per page, between 1 and 100.
-            offset: Offset token. Used for pagination to retrieve the next page of results.
-            opt_fields: A comma-separated list of optional fields to include beyond the compact form.
-            opt_pretty: Enables pretty formatting for the response, primarily for debugging purposes.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'custom_field,custom_field.asana_created_field,custom_field.created_by,custom_field.created_by.name,custom_field.currency_code,custom_field.custom_label,custom_field.custom_label_position,custom_field.date_value,custom_field.date_value.date,custom_field.date_value.date_time,custom_field.description,custom_field.display_value,custom_field.enabled,custom_field.enum_options,custom_field.enum_options.color,custom_field.enum_options.enabled,custom_field.enum_options.name,custom_field.enum_value,custom_field.enum_value.color,custom_field.enum_value.enabled,custom_field.enum_value.name,custom_field.format,custom_field.has_notifications_enabled,custom_field.id_prefix,custom_field.is_formula_field,custom_field.is_global_to_workspace,custom_field.is_value_read_only,custom_field.multi_enum_values,custom_field.multi_enum_values.color,custom_field.multi_enum_values.enabled,custom_field.multi_enum_values.name,custom_field.name,custom_field.number_value,custom_field.people_value,custom_field.people_value.name,custom_field.precision,custom_field.representation_type,custom_field.resource_subtype,custom_field.text_value,custom_field.type,is_important,offset,parent,parent.name,path,project,project.name,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing the custom fields settings for a project.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request encounters a status-related error.
-        
+            dict[str, Any]: Successfully retrieved custom field settings objects for a project.
+
         Tags:
-            custom-fields, pagination, api-call, management, important
+            Custom field settings
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -528,22 +784,24 @@ class AsanaApp(APIApplication):
 
     def get_aportfolio_scustom_fields(self, portfolio_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Fetches a portfolio's custom fields from the API, returning them in a compact form.
-        
+        Retrieves custom field settings for a portfolio using the "GET" method, allowing for optional parameters to customize the output.
+
         Args:
-            limit: Results per page. The number of objects to return per page. The value must be between 1 and 100.
-            offset: Offset token. An offset to the next page returned by the API.
-            opt_fields: Optional fields to include in the response. Pass a comma-separated list of properties to include.
-            opt_pretty: Provides 'pretty' output for debugging purposes, such as proper line breaking and indentation in JSON responses.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'custom_field,custom_field.asana_created_field,custom_field.created_by,custom_field.created_by.name,custom_field.currency_code,custom_field.custom_label,custom_field.custom_label_position,custom_field.date_value,custom_field.date_value.date,custom_field.date_value.date_time,custom_field.description,custom_field.display_value,custom_field.enabled,custom_field.enum_options,custom_field.enum_options.color,custom_field.enum_options.enabled,custom_field.enum_options.name,custom_field.enum_value,custom_field.enum_value.color,custom_field.enum_value.enabled,custom_field.enum_value.name,custom_field.format,custom_field.has_notifications_enabled,custom_field.id_prefix,custom_field.is_formula_field,custom_field.is_global_to_workspace,custom_field.is_value_read_only,custom_field.multi_enum_values,custom_field.multi_enum_values.color,custom_field.multi_enum_values.enabled,custom_field.multi_enum_values.name,custom_field.name,custom_field.number_value,custom_field.people_value,custom_field.people_value.name,custom_field.precision,custom_field.representation_type,custom_field.resource_subtype,custom_field.text_value,custom_field.type,is_important,offset,parent,parent.name,path,project,project.name,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing the custom fields settings.
-        
-        Raises:
-            HTTPError: If the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved custom field settings objects for a portfolio.
+
         Tags:
-            custom, portfolio, fetch, pagination, important
+            Custom field settings
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -555,22 +813,21 @@ class AsanaApp(APIApplication):
 
     def get_events_on_aresource(self, opt_fields=None, resource=None, sync=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a list of events that have occurred on a specified resource since the sync token was generated.
-        
+        Retrieves a list of events using the "GET" method at the "/events" endpoint, allowing optional filtering by fields, resource, synchronization status, and output format.
+
         Args:
-            opt_fields: Optional fields to include in the response, specified as a comma-separated list.
-            opt_pretty: Provides 'pretty' output for debugging purposes, adding line breaks and indentation to the response.
-            resource: Required resource ID for tasks, projects, or goals.
-            sync: Sync token for retrieving events from the point in time it was generated; omit on first request.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'action,change,change.action,change.added_value,change.field,change.new_value,change.removed_value,created_at,parent,parent.name,resource,resource.name,type,user,user.name'.
+            resource (string): (Required) A resource ID to subscribe to. The resource can be a task, project, or goal. Example: '12345'.
+            sync (string): A sync token received from the last request, or none on first sync. Events will be returned from the point in time that the sync token was generated.
+        *Note: On your first request, omit the sync token. The response will be the same as for an expired sync token, and will include a new valid sync token.If the sync token is too old (which may happen from time to time) the API will return a `412 Precondition Failed` error, and include a fresh sync token in the response.* Example: 'de4774f6915eae04714ca93bb2f5ee81'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing full event records and metadata.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails, such as a 412 Precondition Failed error due to an expired sync token.
-        
+            dict[str, Any]: Successfully retrieved events.
+
         Tags:
-            events, sync, async_job, management, important
+            Events
         """
         url = f"{self.base_url}/events"
         query_params = {k: v for k, v in [('opt_fields', opt_fields), ('resource', resource), ('sync', sync), ('opt_pretty', opt_pretty)] if v is not None}
@@ -580,20 +837,19 @@ class AsanaApp(APIApplication):
 
     def get_agoal(self, goal_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a complete goal record for a single goal, allowing optional fields and pretty output.
-        
+        Retrieves information about a specific goal using the `GET` method at the path `/goals/{goal_gid}`, allowing optional parameters for customizing output fields and formatting.
+
         Args:
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: Enables pretty output for debugging purposes.
-        
+            goal_gid (string): goal_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,owner,owner.name,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the goal record.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request does not return a successful status code.
-        
+            dict[str, Any]: Successfully retrieved the record for a single goal.
+
         Tags:
-            goal, management, fetch, important
+            Goals
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -605,21 +861,41 @@ class AsanaApp(APIApplication):
 
     def update_agoal(self, goal_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Update an existing goal by sending a PUT request to the specified URL. Only provided fields are updated, leaving unspecified fields unchanged.
-        
+        Updates a specific goal identified by its GID using the PUT method at the path "/goals/{goal_gid}", optionally including query parameters for custom fields and formatting.
+
         Args:
-            data: A dictionary containing the fields to be updated in the goal.
-            opt_fields: A comma-separated list of optional properties to include in the response.
-            opt_pretty: Flag to provide the response in a readable, pretty format, useful for debugging.
-        
+            goal_gid (string): goal_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,owner,owner.name,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "due_on": "2019-09-15",
+                    "gid": "12345",
+                    "html_notes": "<body>Start building brand awareness.</body>",
+                    "is_workspace_level": true,
+                    "liked": false,
+                    "name": "Grow web traffic by 30%",
+                    "notes": "Start building brand awareness.",
+                    "owner": "12345",
+                    "resource_type": "task",
+                    "start_on": "2019-09-14",
+                    "status": "green",
+                    "team": "12345",
+                    "time_period": "12345",
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            The complete updated goal record as a dictionary.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if an HTTP request error occurs, such as a bad status code.
-        
+            dict[str, Any]: Successfully updated the goal.
+
         Tags:
-            update, goals, important
+            Goals
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -635,19 +911,18 @@ class AsanaApp(APIApplication):
 
     def delete_agoal(self, goal_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific existing goal by sending a DELETE request to the goal's URL.
-        
+        Deletes a specific goal resource identified by the `goal_gid` at the path "/goals/{goal_gid}" using the HTTP DELETE method.
+
         Args:
-            opt_pretty: If True, returns response in a human-readable format at the cost of performance and response size. Recommended only for debugging purposes.
-        
+            goal_gid (string): goal_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the empty data record of the deleted goal.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails, typically due to invalid goal ID, insufficient permissions, or server issues.
-        
+            dict[str, Any]: Successfully deleted the specified goal.
+
         Tags:
-            delete, async_job, goals, management, important
+            Goals
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -659,29 +934,30 @@ class AsanaApp(APIApplication):
 
     def get_goals(self, portfolio=None, project=None, task=None, is_workspace_level=None, team=None, workspace=None, time_periods=None, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Fetches compact goal records based on specified parameters.
-        
+        Retrieves a list of goals using the GET method at the "/goals" endpoint, allowing filtering by parameters such as portfolio, project, task, team, workspace, and time periods.
+
         Args:
-            is_workspace_level: Filter to goals with is_workspace_level set to query value. Must be used with the workspace parameter.
-            limit: Results per page. The number of objects to return per page. The value must be between 1 and 100.
-            offset: Offset token. Used for pagination, it must be obtained from a previous paginated request.
-            opt_fields: Optional fields to include in the response. Specify as a comma-separated list.
-            opt_pretty: Provides the response in a readable format. Advisable only for debugging.
-            portfolio: Globally unique identifier for supporting portfolio.
-            project: Globally unique identifier for supporting project.
-            task: Globally unique identifier for supporting task.
-            team: Globally unique identifier for the team.
-            time_periods: Globally unique identifiers for the time periods.
-            workspace: Globally unique identifier for the workspace.
-        
+            portfolio (string): Globally unique identifier for supporting portfolio. Example: '159874'.
+            project (string): Globally unique identifier for supporting project. Example: '512241'.
+            task (string): Globally unique identifier for supporting task. Example: '78424'.
+            is_workspace_level (string): Filter to goals with is_workspace_level set to query value. Must be used with the workspace parameter. Example: 'false'.
+            team (string): Globally unique identifier for the team. Example: '31326'.
+            workspace (string): Globally unique identifier for the workspace. Example: '31326'.
+            time_periods (string): Globally unique identifiers for the time periods. Example: '221693,506165'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,offset,owner,owner.name,path,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing compact goal records.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the requested goals.
+
         Tags:
-            fetch, goals, list, management, important
+            Goals
         """
         url = f"{self.base_url}/goals"
         query_params = {k: v for k, v in [('portfolio', portfolio), ('project', project), ('task', task), ('is_workspace_level', is_workspace_level), ('team', team), ('workspace', workspace), ('time_periods', time_periods), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -691,21 +967,42 @@ class AsanaApp(APIApplication):
 
     def create_agoal(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new goal in a workspace or team and returns the full record of the newly created goal.
-        
+        Creates a new goal in the system and returns the created resource.
+
         Args:
-            data: Dictionary containing goal creation data. Optional.
-            opt_fields: Optional comma-separated list of properties to include in the response.
-            opt_pretty: Option to format the response in a 'pretty' format for readability.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,owner,owner.name,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "due_on": "2019-09-15",
+                    "followers": [
+                      "12345"
+                    ],
+                    "gid": "12345",
+                    "html_notes": "<body>Start building brand awareness.</body>",
+                    "is_workspace_level": true,
+                    "liked": false,
+                    "name": "Grow web traffic by 30%",
+                    "notes": "Start building brand awareness.",
+                    "owner": "12345",
+                    "resource_type": "task",
+                    "start_on": "2019-09-14",
+                    "team": "12345",
+                    "time_period": "12345",
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            The full record of the newly created goal as a dictionary.
-        
-        Raises:
-            requests.RequestException: Raised if there is an issue with the HTTP request, such as network errors.
-        
+            dict[str, Any]: Successfully created a new goal.
+
         Tags:
-            create, goal, management, important
+            Goals
         """
         request_body = {
             'data': data,
@@ -719,21 +1016,39 @@ class AsanaApp(APIApplication):
 
     def create_agoal_metric(self, goal_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates and adds a goal metric to a specified goal, replacing any existing metric.
-        
+        Sets a metric for a specific goal identified by `{goal_gid}` and returns the updated goal data.
+
         Args:
-            data: The data dictionary for the goal metric; may be None if not provided.
-            opt_fields: Optional fields to include in the request; a comma-separated list of properties.
-            opt_pretty: Option to enable pretty output, useful for debugging with formatted JSON.
-        
+            goal_gid (string): goal_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,owner,owner.name,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "currency_code": "EUR",
+                    "current_display_value": "8.12",
+                    "current_number_value": 8.12,
+                    "gid": "12345",
+                    "initial_number_value": 5.2,
+                    "is_custom_weight": false,
+                    "precision": 2,
+                    "progress_source": "manual",
+                    "resource_subtype": "number",
+                    "resource_type": "task",
+                    "target_number_value": 10.2,
+                    "unit": "currency"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing the response data for the created goal metric.
-        
-        Raises:
-            requests.RequestException: Raised if there is an issue with the HTTP request, such as network errors or invalid responses.
-        
+            dict[str, Any]: Successfully created a new goal metric.
+
         Tags:
-            create, goal-metric, management, important
+            Goals
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -749,21 +1064,30 @@ class AsanaApp(APIApplication):
 
     def update_agoal_metric(self, goal_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Update a goal's existing metric's current value and return the updated metric record.
-        
+        Sets the current metric value for a specified goal using the "POST" method at the "/goals/{goal_gid}/setMetricCurrentValue" endpoint.
+
         Args:
-            data: Dictionary containing the goal metric data to be updated. Must include the current_number_value for existing metrics.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Flag to enable pretty-printed JSON output for debugging purposes.
-        
+            goal_gid (string): goal_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,owner,owner.name,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "current_number_value": 8.12,
+                    "gid": "12345",
+                    "resource_type": "task"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary representing the complete updated goal metric record.
-        
-        Raises:
-            HTTPError: If the request fails, typically with 400 status code when no existing metric is found.
-        
+            dict[str, Any]: Successfully updated the goal metric.
+
         Tags:
-            update, goals, metric, management, important
+            Goals
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -779,21 +1103,31 @@ class AsanaApp(APIApplication):
 
     def add_acollaborator_to_agoal(self, goal_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds collaborators as followers to a goal and returns the updated goal data.
-        
+        Adds followers to a specific goal using the "POST" method at the "/goals/{goal_gid}/addFollowers" endpoint and returns a status message based on the operation's success or failure.
+
         Args:
-            data: Dictionary containing collaborator data to associate with the goal.
-            opt_fields: Optional comma-separated list of fields to include (provides compact responses by default).
-            opt_pretty: Provides formatted output for readability during debugging (increases response size).
-        
+            goal_gid (string): goal_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,owner,owner.name,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "followers": [
+                      "13579",
+                      "321654"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the updated goal data with new collaborators/followers.
-        
-        Raises:
-            HTTPError: Raised for failed API requests (4XX/5XX status codes).
-        
+            dict[str, Any]: Successfully added users as collaborators.
+
         Tags:
-            add, collaborator, goal, followers, update, management, important
+            Goals
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -809,21 +1143,31 @@ class AsanaApp(APIApplication):
 
     def remove_acollaborator_from_agoal(self, goal_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Removes a collaborator from a goal and returns the updated goal record.
-        
+        Removes followers from a specified goal using the POST method at the "/goals/{goal_gid}/removeFollowers" path.
+
         Args:
-            data: Dictionary containing data for the removal request. It can be None if no specific data is required.
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: Provides 'pretty' output with proper formatting, suitable for debugging.
-        
+            goal_gid (string): goal_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,owner,owner.name,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "followers": [
+                      "13579",
+                      "321654"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the updated goal record.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully removed users as collaborators.
+
         Tags:
-            remove, collaborator, goal, management, important
+            Goals
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -839,20 +1183,19 @@ class AsanaApp(APIApplication):
 
     def get_parent_goals_from_agoal(self, goal_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves parent goals from a specific goal, returning them in a compact format.
-        
+        Retrieves parent goals associated with a specific goal identified by its goal_gid.
+
         Args:
-            opt_fields: Optional comma-separated list of fields to include beyond the default compact resource.
-            opt_pretty: Optional parameter for formatting the output in a more readable format.
-        
+            goal_gid (string): goal_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'current_status_update,current_status_update.resource_subtype,current_status_update.title,due_on,followers,followers.name,html_notes,is_workspace_level,liked,likes,likes.user,likes.user.name,metric,metric.can_manage,metric.currency_code,metric.current_display_value,metric.current_number_value,metric.initial_number_value,metric.is_custom_weight,metric.precision,metric.progress_source,metric.resource_subtype,metric.target_number_value,metric.unit,name,notes,num_likes,owner,owner.name,start_on,status,team,team.name,time_period,time_period.display_name,time_period.end_on,time_period.period,time_period.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the parent goals.
-        
-        Raises:
-            HTTPError: Raised if the request fails, indicating an issue with the HTTP request.
-        
+            dict[str, Any]: Successfully retrieved the specified goal's parent goals.
+
         Tags:
-            goals, management, scrape, important
+            Goals
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -864,20 +1207,19 @@ class AsanaApp(APIApplication):
 
     def get_agoal_relationship(self, goal_relationship_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve a complete goal relationship record by making a GET request to the specified endpoint.
-        
+        Retrieves a goal relationship object by its GID, optionally including additional fields in the response, using the Asana API.
+
         Args:
-            opt_fields: Comma-separated list of optional fields to include in response (excludes some properties by default if omitted).
-            opt_pretty: Enable formatted output with line breaks/indentation for readability (increases response size, recommended for debugging only).
-        
+            goal_relationship_gid (string): goal_relationship_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'contribution_weight,resource_subtype,supported_goal,supported_goal.name,supported_goal.owner,supported_goal.owner.name,supporting_resource,supporting_resource.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the complete goal relationship record data as returned by the API.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when the API request fails with a 4XX or 5XX status code.
-        
+            dict[str, Any]: Successfully retrieved the record for the goal relationship.
+
         Tags:
-            goal-relationships, get, api, important
+            Goal relationships
         """
         if goal_relationship_gid is None:
             raise ValueError("Missing required parameter 'goal_relationship_gid'")
@@ -889,21 +1231,46 @@ class AsanaApp(APIApplication):
 
     def update_agoal_relationship(self, goal_relationship_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing goal relationship by making a PUT request with specified data and returns the complete updated record.
-        
+        Updates a goal relationship using the Asana API and returns a response indicating the outcome of the operation.
+
         Args:
-            data: A dictionary containing fields to update in the goal relationship.
-            opt_fields: A comma-separated list of optional properties to include in the response.
-            opt_pretty: Enables 'pretty' output formatting for easier readability.
-        
+            goal_relationship_gid (string): goal_relationship_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'contribution_weight,resource_subtype,supported_goal,supported_goal.name,supported_goal.owner,supported_goal.owner.name,supporting_resource,supporting_resource.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "contribution_weight": 1,
+                    "gid": "12345",
+                    "resource_subtype": "subgoal",
+                    "resource_type": "task",
+                    "supported_goal": {
+                      "gid": "12345",
+                      "name": "Grow web traffic by 30%",
+                      "owner": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "resource_type": "task"
+                    },
+                    "supporting_resource": {
+                      "gid": "12345",
+                      "name": "Stuff to buy",
+                      "resource_type": "task"
+                    }
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the complete updated goal relationship record.
-        
-        Raises:
-            HTTPRequestError: Raised if the HTTP request fails, for example, due to network errors or invalid responses.
-        
+            dict[str, Any]: Successfully updated the goal relationship.
+
         Tags:
-            update, goal-relationships, management, important
+            Goal relationships
         """
         if goal_relationship_gid is None:
             raise ValueError("Missing required parameter 'goal_relationship_gid'")
@@ -919,24 +1286,25 @@ class AsanaApp(APIApplication):
 
     def get_goal_relationships(self, opt_pretty=None, limit=None, offset=None, supported_goal=None, resource_subtype=None, opt_fields=None) -> dict[str, Any]:
         """
-        Retrieve goal relationships from the API, returning compact goal relationship records with optional pagination and filtering.
-        
+        Retrieves compact goal relationship objects between goals, projects, or portfolios with optional filtering and field selection.
+
         Args:
-            limit: Results per page. The number of objects to return per page. Must be between 1 and 100.
-            offset: Offset token. An offset to the next page returned by the API. It must come from a previous paginated request.
-            opt_fields: Optional properties to include in the response. Provide a comma-separated list of properties to expand the returned resource.
-            opt_pretty: Provides the response in a pretty format for debugging purposes.
-            resource_subtype: Filter goal relationships by this resource subtype.
-            supported_goal: Globally unique identifier of the supported goal for the goal relationship.
-        
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            supported_goal (string): (Required) Globally unique identifier for the supported goal in the goal relationship. Example: '12345'.
+            resource_subtype (string): If provided, filter to goal relationships with a given resource_subtype. Example: 'subgoal'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'contribution_weight,offset,path,resource_subtype,supported_goal,supported_goal.name,supported_goal.owner,supported_goal.owner.name,supporting_resource,supporting_resource.name,uri'.
+
         Returns:
-            A dictionary containing goal relationship records.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the requested goal relationships.
+
         Tags:
-            goal-relationships, pagination, async_job, api-requests, important
+            Goal relationships
         """
         url = f"{self.base_url}/goal_relationships"
         query_params = {k: v for k, v in [('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset), ('supported_goal', supported_goal), ('resource_subtype', resource_subtype), ('opt_fields', opt_fields)] if v is not None}
@@ -946,21 +1314,31 @@ class AsanaApp(APIApplication):
 
     def add_asupporting_goal_relationship(self, goal_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a supporting goal relationship by adding a supporting resource to a specific goal and returns the new relationship record.
-        
+        Adds a supporting relationship to a specified goal using the POST method at the "/goals/{goal_gid}/addSupportingRelationship" endpoint.
+
         Args:
-            data: Dictionary containing the supporting goal relationship data to be added. Must include required fields for relationship creation.
-            opt_fields: Comma-separated string of optional fields to include in the response. Expands default compact resource representation.
-            opt_pretty: Boolean flag to enable pretty-printed JSON output for human readability during debugging.
-        
+            goal_gid (string): goal_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'contribution_weight,resource_subtype,supported_goal,supported_goal.name,supported_goal.owner,supported_goal.owner.name,supporting_resource,supporting_resource.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "contribution_weight": 1,
+                    "insert_after": "1331",
+                    "insert_before": "1331",
+                    "supporting_resource": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the newly created goal relationship record data.
-        
-        Raises:
-            HTTPError: Raised when the API request fails due to network errors, invalid parameters, or server-side issues.
-        
+            dict[str, Any]: Successfully created the goal relationship.
+
         Tags:
-            goal-relationships, create, management, important
+            Goal relationships
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -976,20 +1354,27 @@ class AsanaApp(APIApplication):
 
     def removes_asupporting_goal_relationship(self, goal_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Removes a supporting goal relationship between a parent goal and its dependent goal based on provided data.
-        
+        Removes the supporting relationship from a specified goal and returns a status message.
+
         Args:
-            data: Dictionary containing goal relationship details to be removed (exact structure depends on API requirements)
-            opt_pretty: Enables formatted JSON output with proper indentation and line breaks for human-readable debugging
-        
+            goal_gid (string): goal_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "supporting_resource": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing API response data after processing the removal request
-        
-        Raises:
-            HTTPError: When the API request fails (non-2xx status code), contains response details
-        
+            dict[str, Any]: Successfully removed the goal relationship.
+
         Tags:
-            goal-relationships, remove, management, api, important
+            Goal relationships
         """
         if goal_gid is None:
             raise ValueError("Missing required parameter 'goal_gid'")
@@ -1005,20 +1390,19 @@ class AsanaApp(APIApplication):
 
     def get_ajob_by_id(self, job_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve a job's full record by its ID.
-        
+        Retrieves job details using the specified job GID, with optional fields and formatting controls, via a GET request to the "/jobs/{job_gid}" endpoint.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response (default excludes some properties).
-            opt_pretty: Enables formatted output for readability at the cost of performance (recommended for debugging only).
-        
+            job_gid (string): job_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'new_project,new_project.name,new_project_template,new_project_template.name,new_task,new_task.created_by,new_task.name,new_task.resource_subtype,new_task_template,new_task_template.name,resource_subtype,status'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the complete job record data.
-        
-        Raises:
-            HTTPError: If the HTTP request fails (e.g., invalid job ID, network issues).
-        
+            dict[str, Any]: Successfully retrieved Job.
+
         Tags:
-            get, fetch, job, async-job, management, important
+            Jobs
         """
         if job_gid is None:
             raise ValueError("Missing required parameter 'job_gid'")
@@ -1030,24 +1414,25 @@ class AsanaApp(APIApplication):
 
     def get_multiple_memberships(self, parent=None, member=None, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve multiple membership records for goals, projects, or portfolios, with pagination and filtering options.
-        
+        Retrieves paginated membership records with optional parent, member, and field selection parameters.
+
         Args:
-            limit: Results per page (1-100). Controls the number of objects returned per page.
-            member: Globally unique identifier for `team` or `user` to filter memberships.
-            offset: Offset token for pagination. Use the token from prior paginated responses.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Enable pretty JSON output formatting (useful for debugging).
-            parent: Globally unique identifier for `goal`, `project`, or `portfolio` to filter memberships.
-        
+            parent (string): Globally unique identifier for `goal`, `project`, or `portfolio`. Example: '159874'.
+            member (string): Globally unique identifier for `team` or `user`. Example: '1061493'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'offset,path,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing compact membership records (goal_membership, project_membership, or portfolio_membership).
-        
-        Raises:
-            HTTPError: Raised if the API request fails due to invalid parameters or server errors.
-        
+            dict[str, Any]: Successfully retrieved the requested membership.
+
         Tags:
-            memberships, pagination, filtering, api-client, important
+            Memberships
         """
         url = f"{self.base_url}/memberships"
         query_params = {k: v for k, v in [('parent', parent), ('member', member), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -1057,20 +1442,29 @@ class AsanaApp(APIApplication):
 
     def create_amembership(self, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new membership in a goal or project for users or teams, returning the full membership record.
-        
+        Creates a new membership by sending a POST request to the "/memberships" endpoint, potentially returning a newly created membership resource with a status code indicating successful creation.
+
         Args:
-            data: Dictionary containing membership details to be created [1][5].
-            opt_pretty: Provides formatted output for readability during debugging (increases response size and processing time) [1][5].
-        
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "access_level": "editor",
+                    "member": "labore velit anim",
+                    "parent": "987654",
+                    "role": "editor"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the complete record of the newly created membership [1][5].
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid parameters, authorization errors, or server issues [1][5].
-        
+            dict[str, Any]: Successfully created the requested membership.
+
         Tags:
-            create, membership, management, api-integration, important
+            Memberships
         """
         request_body = {
             'data': data,
@@ -1084,20 +1478,19 @@ class AsanaApp(APIApplication):
 
     def get_amembership(self, membership_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Fetches a compact project membership record.
-        
+        Retrieves membership details for a specified membership ID, supporting optional field selection and formatted responses.
+
         Args:
-            opt_fields: Optional fields to include in the response. Specify a comma-separated list of properties.
-            opt_pretty: Flag to provide the response in a pretty, formatted output.
-        
+            membership_gid (string): membership_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'access_level,member,member.name,parent,parent.name,resource_subtype'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the membership record.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the record for a single membership.
+
         Tags:
-            membership, fetch, important, management
+            Memberships
         """
         if membership_gid is None:
             raise ValueError("Missing required parameter 'membership_gid'")
@@ -1109,20 +1502,27 @@ class AsanaApp(APIApplication):
 
     def update_amembership(self, membership_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing membership by making a PUT request, modifying only the specified fields in the provided data.
-        
+        Updates an existing membership identified by `{membership_gid}` using the PUT method.
+
         Args:
-            data: A dictionary containing the fields to be updated in the membership.
-            opt_pretty: A flag to specify if the response should be in a 'pretty' format, useful for debugging.
-        
+            membership_gid (string): membership_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "access_level": "editor"
+                  }
+                }
+                ```
+
         Returns:
-            The full record of the updated membership.
-        
-        Raises:
-            requests.exceptions.RequestException: Raised when there is an issue with the HTTP request.
-        
+            dict[str, Any]: Successfully updated the requested membership.
+
         Tags:
-            update, membership, management, important
+            Memberships
         """
         if membership_gid is None:
             raise ValueError("Missing required parameter 'membership_gid'")
@@ -1138,19 +1538,18 @@ class AsanaApp(APIApplication):
 
     def delete_amembership(self, membership_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific membership for a goal or project by sending a DELETE request to the appropriate endpoint.
-        
+        Deletes a membership by its GUID using the API, removing the associated relationship between entities.
+
         Args:
-            opt_pretty: Provides 'pretty' output formatting for JSON responses. Enables proper line breaking and indentation to improve readability, but increases response size and processing time. Recommended for debugging purposes only.
-        
+            membership_gid (string): membership_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Empty dictionary indicating successful deletion of the membership. The response body typically contains no data beyond a success status.
-        
-        Raises:
-            HTTPError: Raised when the DELETE request fails, such as when the membership does not exist or the user lacks sufficient permissions.
-        
+            dict[str, Any]: Successfully deleted the requested membership.
+
         Tags:
-            delete, membership, api, management, important
+            Memberships
         """
         if membership_gid is None:
             raise ValueError("Missing required parameter 'membership_gid'")
@@ -1162,21 +1561,27 @@ class AsanaApp(APIApplication):
 
     def create_an_organization_export_request(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Initiates an asynchronous export request for an Organization in Asana.
-        
+        Initiates a request to export an organization's complete data in JSON format, returning a status response upon successful creation.
+
         Args:
-            data: Dictionary containing export parameters/settings for the organization.
-            opt_fields: Comma-separated list of optional fields to include in the response. Omitted fields are excluded by default.
-            opt_pretty: Whether to return formatted JSON output (increases response size and processing time). Recommended for debugging only.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,download_url,organization,organization.name,state'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "organization": "1331"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the created export request details and associated metadata.
-        
-        Raises:
-            HTTPError: If the underlying API request fails (e.g., invalid parameters, authentication errors, or server issues).
-        
+            dict[str, Any]: Successfully created organization export request.
+
         Tags:
-            async-job, export, organization-management, important
+            Organization exports
         """
         request_body = {
             'data': data,
@@ -1190,20 +1595,19 @@ class AsanaApp(APIApplication):
 
     def get_details_on_an_org_export_request(self, organization_export_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve details of a previously-requested Organization export, including optional fields and formatted output.
-        
+        Retrieves information about an organization export using the provided GID, allowing optional specification of additional fields and pretty-print formatting.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response. Excludes some properties by default.
-            opt_pretty: Format the response with indentation and line breaks for readability. May increase response size and processing time.
-        
+            organization_export_gid (string): organization_export_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,download_url,organization,organization.name,state'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing Organization export details from the API response.
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails due to network errors, authentication issues, or invalid endpoints.
-        
+            dict[str, Any]: Successfully retrieved organization export object.
+
         Tags:
-            export, organization, retrieve, details, important
+            Organization exports
         """
         if organization_export_gid is None:
             raise ValueError("Missing required parameter 'organization_export_gid'")
@@ -1215,24 +1619,25 @@ class AsanaApp(APIApplication):
 
     def get_multiple_portfolios(self, limit=None, offset=None, workspace=None, owner=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve multiple portfolios, returning them in a compact representation. The portfolios are filtered by the specified workspace and can be further limited by owner, pagination parameters, and additional fields.
-        
+        Retrieves a list of portfolios with optional filtering and field selection parameters.
+
         Args:
-            limit: Results per page; the number of objects to return per page, which must be between 1 and 100.
-            offset: Offset token; used for pagination to fetch the next page of results.
-            opt_fields: Optional properties to include; a comma-separated list of fields to return beyond the default compact resource.
-            opt_pretty: Provides pretty output; formats the response to be more readable, such as line breaks and indentation for JSON.
-            owner: The owner of the portfolios; currently limited to portfolios owned by the API user unless using a Service Account.
-            workspace: The workspace to filter portfolios by; this parameter is required.
-        
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            workspace (string): (Required) The workspace or organization to filter portfolios on. Example: '1331'.
+            owner (string): The user who owns the portfolio. Currently, API users can only get a list of portfolios that they themselves own, unless the request is made from a Service Account. In the case of a Service Account, if this parameter is specified, then all portfolios owned by this parameter are returned. Otherwise, all portfolios across the workspace are returned. Example: '14916'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,created_by,created_by.name,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,due_on,members,members.name,name,offset,owner,owner.name,path,permalink_url,privacy_setting,project_templates,project_templates.name,public,start_on,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the portfolios. The exact structure may vary based on the included optional fields.
-        
-        Raises:
-            requests.RequestException: Raised when there is an issue with the HTTP request, such as a connection error or invalid response.
-        
+            dict[str, Any]: Successfully retrieved portfolios.
+
         Tags:
-            list, portfolios, management, important
+            Portfolios
         """
         url = f"{self.base_url}/portfolios"
         query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('workspace', workspace), ('owner', owner), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -1242,21 +1647,36 @@ class AsanaApp(APIApplication):
 
     def create_aportfolio(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a portfolio in the specified workspace, allowing custom initialization without automatic UI state like Priority fields.
-        
+        Creates a new portfolio and returns the result, optionally including specified fields and formatted output, using the Portfolio API.
+
         Args:
-            data: Dictionary containing portfolio data (e.g., name, workspace). Required fields depend on API requirements.
-            opt_fields: Comma-separated list of optional fields to include in the response. Excluded properties by default.
-            opt_pretty: Format response with improved readability/indentation. Recommended for debugging only due to performance impact.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,created_by,created_by.name,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,due_on,members,members.name,name,owner,owner.name,permalink_url,privacy_setting,project_templates,project_templates.name,public,start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "color": "light-green",
+                    "gid": "12345",
+                    "members": [
+                      "52164",
+                      "15363"
+                    ],
+                    "name": "Bug Portfolio",
+                    "public": false,
+                    "resource_type": "task",
+                    "workspace": "167589"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the created portfolio details and associated metadata.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid data, authentication issues, or server errors.
-        
+            dict[str, Any]: Successfully created portfolio.
+
         Tags:
-            create, portfolio-management, api-endpoint, important
+            Portfolios
         """
         request_body = {
             'data': data,
@@ -1270,20 +1690,19 @@ class AsanaApp(APIApplication):
 
     def get_aportfolio(self, portfolio_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a portfolio record from the API, returning all fields unless filtered by optional parameters.
-        
+        Retrieves details about a specific portfolio identified by `{portfolio_gid}` using the `GET` method, allowing optional fields (`opt_fields`) and pretty formatting (`opt_pretty`) in the query parameters.
+
         Args:
-            opt_fields: Comma-separated list of optional fields to include. Excludes non-specified properties by default.
-            opt_pretty: Provides formatted output for improved readability at the cost of performance. Recommended for debugging only.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,created_by,created_by.name,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,due_on,members,members.name,name,owner,owner.name,permalink_url,privacy_setting,project_templates,project_templates.name,public,start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            dict[str, Any]: Complete portfolio record as a dictionary, containing requested data fields and metadata.
-        
-        Raises:
-            HTTPError: Raised when the API request fails due to network issues, invalid parameters, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the requested portfolio.
+
         Tags:
-            get, portfolio, api, async_job, management, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1295,21 +1714,37 @@ class AsanaApp(APIApplication):
 
     def update_aportfolio(self, portfolio_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing portfolio by modifying specified fields while preserving unspecified ones, returning the complete updated portfolio record.
-        
+        Replaces the entire portfolio resource with the provided data and returns the updated portfolio.
+
         Args:
-            data: Dictionary containing portfolio data to update. Only provided fields will be modified.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Provides formatted output for readability during debugging.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,created_by,created_by.name,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,due_on,members,members.name,name,owner,owner.name,permalink_url,privacy_setting,project_templates,project_templates.name,public,start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "color": "light-green",
+                    "gid": "12345",
+                    "members": [
+                      "52164",
+                      "15363"
+                    ],
+                    "name": "Bug Portfolio",
+                    "public": false,
+                    "resource_type": "task",
+                    "workspace": "167589"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the complete updated portfolio record.
-        
-        Raises:
-            requests.HTTPError: Raised for invalid requests, authorization failures, or server errors based on the HTTP response.
-        
+            dict[str, Any]: Successfully updated the portfolio.
+
         Tags:
-            update, portfolio, management, important, put-request
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1325,19 +1760,18 @@ class AsanaApp(APIApplication):
 
     def delete_aportfolio(self, portfolio_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a portfolio by making a DELETE request.
-        
+        Deletes the specified portfolio and returns a success status or error code.
+
         Args:
-            opt_pretty: Provides the response in a pretty format, including line breaks and indentation for readability. Optional and defaults to None.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            An empty data record returned as a dictionary.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully deleted the specified portfolio.
+
         Tags:
-            delete, portfolio, management, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1349,22 +1783,24 @@ class AsanaApp(APIApplication):
 
     def get_portfolio_items(self, portfolio_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Fetches a list of portfolio items in compact form, retrieving them based on pagination parameters.
-        
+        Retrieves a list of items associated with a specified portfolio using a GET request, allowing for optional parameters to customize the response fields and pagination.
+
         Args:
-            limit: The number of results to return per page, between 1 and 100.
-            offset: Pagination offset token for retrieving the next page of results.
-            opt_fields: Optional fields to include in the response, specified as a comma-separated list.
-            opt_pretty: Flag to format the response output (e.g., JSON) for readability.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,offset,owner,path,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing the list of portfolio items.
-        
-        Raises:
-            HTTPError: Raised when the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the requested portfolio's items.
+
         Tags:
-            list, portfolio, pagination, portfolio-management, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1376,20 +1812,29 @@ class AsanaApp(APIApplication):
 
     def add_aportfolio_item(self, portfolio_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds an item to a portfolio and returns an empty data block.
-        
+        Adds an item to a specified portfolio using a POST request, requiring item placement parameters.
+
         Args:
-            data: Data to be added to the portfolio. It should be a dictionary.
-            opt_pretty: Option to return the response in a 'pretty' format, useful for debugging.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "insert_after": "1331",
+                    "insert_before": "1331",
+                    "item": "1331"
+                  }
+                }
+                ```
+
         Returns:
-            An empty data block returned as a dictionary.
-        
-        Raises:
-            HTTPError: Raised if there is an issue with the HTTP request, such as a 4xx or 5xx status code.
-        
+            dict[str, Any]: Successfully added the item to the portfolio.
+
         Tags:
-            add, portfolio, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1405,20 +1850,27 @@ class AsanaApp(APIApplication):
 
     def remove_aportfolio_item(self, portfolio_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove an item from a portfolio via API request and return the response data.
-        
+        Removes an item from a portfolio using the provided path "/portfolios/{portfolio_gid}/removeItem" via a POST request.
+
         Args:
-            data: Dictionary containing portfolio item data to be removed. Must include required item identifiers.
-            opt_pretty: Optional flag to format response with indentation and line breaks for readability. Use only for debugging.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "item": "1331"
+                  }
+                }
+                ```
+
         Returns:
-            Parsed JSON response as dictionary. Returns empty data block on success with no content.
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails due to invalid data, authentication errors, or server issues.
-        
+            dict[str, Any]: Successfully removed the item from the portfolio.
+
         Tags:
-            portfolio, management, remove, delete, api, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1434,20 +1886,30 @@ class AsanaApp(APIApplication):
 
     def add_acustom_field_to_aportfolio(self, portfolio_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds a custom field to a portfolio by creating a custom field setting.
-        
+        Adds a custom field to a specified portfolio by creating a custom field setting using the Asana API.
+
         Args:
-            data: A dictionary containing data for the custom field. If not provided, it defaults to None.
-            opt_pretty: A boolean or other value to control whether the response is in a 'pretty' format. Defaults to None.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "custom_field": "14916",
+                    "insert_after": "1331",
+                    "insert_before": "1331",
+                    "is_important": true
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing the response data for the added custom field.
-        
-        Raises:
-            requests.HTTPError: Raised when the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully added the custom field to the portfolio.
+
         Tags:
-            portfolios, management, custom_fields, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1463,20 +1925,27 @@ class AsanaApp(APIApplication):
 
     def remove_acustom_field_from_aportfolio(self, portfolio_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove a custom field setting from a portfolio.
-        
+        Removes a custom field setting from a portfolio and returns a success status.
+
         Args:
-            data: Dictionary containing request data for custom field removal from the portfolio.
-            opt_pretty: Provides 'pretty' JSON output formatting (increases response size and processing time).
-        
+            portfolio_gid (string): portfolio_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "custom_field": "14916"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the response data after custom field removal operation.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when the API request returns a non-success status code (4xx/5xx).
-        
+            dict[str, Any]: Successfully removed the custom field from the portfolio.
+
         Tags:
-            remove, custom-field, portfolio, management, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1492,21 +1961,28 @@ class AsanaApp(APIApplication):
 
     def add_users_to_aportfolio(self, portfolio_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Add users to a portfolio and return the updated portfolio record.
-        
+        Adds specified users as members to a portfolio and returns the updated portfolio record.
+
         Args:
-            data: Dictionary containing user data for adding members to the portfolio. Required for member addition.
-            opt_fields: Comma-separated list of optional fields to include in the response. Excludes some properties by default if not specified.
-            opt_pretty: If true, returns response with improved formatting and readability. Recommended for debugging only due to performance impact.
-        
+            portfolio_gid (string): portfolio_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,created_by,created_by.name,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,due_on,members,members.name,name,owner,owner.name,permalink_url,privacy_setting,project_templates,project_templates.name,public,start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "members": "521621,621373"
+                  }
+                }
+                ```
+
         Returns:
-            Updated portfolio record as a dictionary with the added users.
-        
-        Raises:
-            HTTPError: Raised when the API request fails, such as invalid input data, authentication issues, or server errors.
-        
+            dict[str, Any]: Successfully added members to the portfolio.
+
         Tags:
-            add, users, portfolio, management, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1522,21 +1998,28 @@ class AsanaApp(APIApplication):
 
     def remove_users_from_aportfolio(self, portfolio_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove users from a portfolio and return the updated portfolio record.
-        
+        Removes members from a portfolio using the specified portfolio ID and returns a status message.
+
         Args:
-            data: Dictionary containing user removal data with relevant user identifiers (required).
-            opt_fields: Comma-separated string specifying optional properties to include in the response (increases response detail).
-            opt_pretty: Boolean flag to enable formatted JSON output (use for debugging only).
-        
+            portfolio_gid (string): portfolio_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,created_by,created_by.name,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,due_on,members,members.name,name,owner,owner.name,permalink_url,privacy_setting,project_templates,project_templates.name,public,start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "members": "521621,621373"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary representing the updated portfolio record after user removal.
-        
-        Raises:
-            HTTPError: Raised when the HTTP request fails, typically due to invalid input data or server errors.
-        
+            dict[str, Any]: Successfully removed the members from the portfolio.
+
         Tags:
-            portfolios, user-management, batch-update, api, important
+            Portfolios
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1552,25 +2035,26 @@ class AsanaApp(APIApplication):
 
     def get_multiple_portfolio_memberships(self, opt_fields=None, portfolio=None, workspace=None, user=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieves multiple portfolio memberships, returning them in a compact representation. Requires specifying either `portfolio` and `user`, or `workspace` and `user`. Supports pagination and optional fields.
-        
+        Retrieves portfolio membership details in Asana, including associated users and workspaces, with optional filtering and output field selection.
+
         Args:
-            limit: The number of results per page. Must be between 1 and 100.
-            offset: An offset token for pagination, returned by previous API requests.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Enables pretty formatting of the response, primarily for debugging.
-            portfolio: The portfolio to filter results on.
-            user: A string identifying a user, which can be 'me', an email, or a user's gid.
-            workspace: The workspace to filter results on.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'access_level,offset,path,portfolio,portfolio.name,uri,user,user.name'.
+            portfolio (string): The portfolio to filter results on. Example: '12345'.
+            workspace (string): The workspace to filter results on. Example: '12345'.
+            user (string): A string identifying a user. This can either be the string "me", an email, or the gid of a user. Example: 'me'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing a list of portfolio memberships.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved portfolio memberships.
+
         Tags:
-            list, portfolio, membership, pagination, important
+            Portfolio memberships
         """
         url = f"{self.base_url}/portfolio_memberships"
         query_params = {k: v for k, v in [('opt_fields', opt_fields), ('portfolio', portfolio), ('workspace', workspace), ('user', user), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
@@ -1580,20 +2064,19 @@ class AsanaApp(APIApplication):
 
     def get_aportfolio_membership(self, portfolio_membership_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a portfolio membership, returning the complete portfolio record.
-        
+        Retrieves details about a portfolio membership by its GID, optionally including additional fields and formatted output.
+
         Args:
-            opt_fields: Optional query parameter to include additional properties in the response. It accepts a comma-separated list of the properties to include.
-            opt_pretty: Optional flag to provide the response in a readable 'pretty' format, useful for debugging.
-        
+            portfolio_membership_gid (string): portfolio_membership_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'access_level,portfolio,portfolio.name,user,user.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the portfolio membership details.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the requested portfolio membership.
+
         Tags:
-            portfolio, membership, retrieve, important
+            Portfolio memberships
         """
         if portfolio_membership_gid is None:
             raise ValueError("Missing required parameter 'portfolio_membership_gid'")
@@ -1605,23 +2088,25 @@ class AsanaApp(APIApplication):
 
     def get_memberships_from_aportfolio(self, portfolio_gid, opt_fields=None, user=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Get memberships from a portfolio, returning compact portfolio membership records.
-        
+        Retrieves a list of portfolio memberships for a specific portfolio identified by its GID, allowing for optional filtering by user and customizing the response with additional fields.
+
         Args:
-            limit: The number of objects to return per page (between 1 and 100).
-            offset: Offset token for pagination, used to retrieve the next page of results.
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: Provides the response in a "pretty" format, useful for debugging.
-            user: A string identifying a user (e.g., "me", email, or gid).
-        
+            portfolio_gid (string): portfolio_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'access_level,offset,path,portfolio,portfolio.name,uri,user,user.name'.
+            user (string): A string identifying a user. This can either be the string "me", an email, or the gid of a user. Example: 'me'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing the membership records.
-        
-        Raises:
-            HTTPError: Raised if there is an issue with the HTTP request (e.g., non-successful response status).
-        
+            dict[str, Any]: Successfully retrieved the requested portfolio's memberships.
+
         Tags:
-            fetch, portfolio, membership, pagination, important
+            Portfolio memberships
         """
         if portfolio_gid is None:
             raise ValueError("Missing required parameter 'portfolio_gid'")
@@ -1633,25 +2118,26 @@ class AsanaApp(APIApplication):
 
     def get_multiple_projects(self, limit=None, offset=None, workspace=None, team=None, archived=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve multiple projects based on filtering criteria, returning compact project records. Handles pagination and allows specifying optional fields to include.
-        
+        Retrieves a list of projects using the specified parameters such as limit, offset, workspace, team, archived status, optional fields, and formatting options.
+
         Args:
-            archived: Only return projects whose `archived` field matches this parameter (True/False).
-            limit: Results per page (integer between 1-100). Controls pagination batch size.
-            offset: Pagination token from previous response. Required to fetch subsequent pages.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Enable pretty-printed JSON output (debugging use only).
-            team: Team filter to scope retrieved projects.
-            workspace: Workspace/organization filter to scope retrieved projects.
-        
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            workspace (string): The workspace or organization to filter projects on. Example: '1331'.
+            team (string): The team to filter projects on. Example: '14916'.
+            archived (string): Only return projects whose `archived` field takes on the value of this parameter. Example: 'false'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,offset,owner,path,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing paginated project data and metadata, with structure dictated by `opt_fields`.
-        
-        Raises:
-            HTTPError: For invalid parameters (e.g., out-of-range limit) or API request failures.
-        
+            dict[str, Any]: Successfully retrieved projects.
+
         Tags:
-            projects, search, pagination, data-retrieval, management, important
+            Projects
         """
         url = f"{self.base_url}/projects"
         query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('workspace', workspace), ('team', team), ('archived', archived), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -1661,21 +2147,290 @@ class AsanaApp(APIApplication):
 
     def create_aproject(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Create a new project in a workspace or team, returning its full record.
-        
+        Creates a new GitLab project with customizable fields and returns a success status upon completion.
+
         Args:
-            data: Dictionary containing project data including workspace/team associations. Must specify workspace (organization or workspace), and team if the workspace is an organization.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Enables pretty-printed JSON output for readability during debugging.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "archived": false,
+                    "color": "light-green",
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "current_status": {
+                      "author": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "color": "complete",
+                      "created_at": "2012-02-22T02:06:58.147Z",
+                      "created_by": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "gid": "12345",
+                      "html_text": "<body>The project <strong>is</strong> moving forward according to plan...</body>",
+                      "modified_at": "2012-02-22T02:06:58.147Z",
+                      "resource_type": "task",
+                      "text": "The project is moving forward according to plan...",
+                      "title": "Status Update - Jun 15"
+                    },
+                    "current_status_update": {
+                      "gid": "12345",
+                      "resource_subtype": "project_status_update",
+                      "resource_type": "task",
+                      "title": "Status Update - Jun 15"
+                    },
+                    "custom_field_settings": [
+                      {
+                        "custom_field": {
+                          "asana_created_field": "priority",
+                          "created_by": {
+                            "gid": "12345",
+                            "name": "Greg Sanchez",
+                            "resource_type": "task"
+                          },
+                          "currency_code": "EUR",
+                          "custom_label": "gold pieces",
+                          "custom_label_position": "suffix",
+                          "date_value": {
+                            "date": "2024-08-23",
+                            "date_time": "2024-08-23T22:00:00.000Z"
+                          },
+                          "description": "Development team priority",
+                          "display_value": "blue",
+                          "enabled": true,
+                          "enum_options": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "enum_value": {
+                            "color": "blue",
+                            "enabled": true,
+                            "gid": "12345",
+                            "name": "Low",
+                            "resource_type": "task"
+                          },
+                          "format": "custom",
+                          "gid": "12345",
+                          "has_notifications_enabled": true,
+                          "id_prefix": "ID",
+                          "is_formula_field": false,
+                          "is_global_to_workspace": true,
+                          "is_value_read_only": false,
+                          "multi_enum_values": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "name": "Status",
+                          "number_value": 5.2,
+                          "people_value": [
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            },
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "precision": 2,
+                          "representation_type": "number",
+                          "resource_subtype": "text",
+                          "resource_type": "task",
+                          "text_value": "Some Value",
+                          "type": "enum"
+                        },
+                        "gid": "12345",
+                        "is_important": false,
+                        "parent": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "resource_type": "task"
+                      },
+                      {
+                        "custom_field": {
+                          "asana_created_field": "priority",
+                          "created_by": {
+                            "gid": "12345",
+                            "name": "Greg Sanchez",
+                            "resource_type": "task"
+                          },
+                          "currency_code": "EUR",
+                          "custom_label": "gold pieces",
+                          "custom_label_position": "suffix",
+                          "date_value": {
+                            "date": "2024-08-23",
+                            "date_time": "2024-08-23T22:00:00.000Z"
+                          },
+                          "description": "Development team priority",
+                          "display_value": "blue",
+                          "enabled": true,
+                          "enum_options": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "enum_value": {
+                            "color": "blue",
+                            "enabled": true,
+                            "gid": "12345",
+                            "name": "Low",
+                            "resource_type": "task"
+                          },
+                          "format": "custom",
+                          "gid": "12345",
+                          "has_notifications_enabled": true,
+                          "id_prefix": "ID",
+                          "is_formula_field": false,
+                          "is_global_to_workspace": true,
+                          "is_value_read_only": false,
+                          "multi_enum_values": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "name": "Status",
+                          "number_value": 5.2,
+                          "people_value": [
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            },
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "precision": 2,
+                          "representation_type": "number",
+                          "resource_subtype": "text",
+                          "resource_type": "task",
+                          "text_value": "Some Value",
+                          "type": "people"
+                        },
+                        "gid": "12345",
+                        "is_important": false,
+                        "parent": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "resource_type": "task"
+                      }
+                    ],
+                    "custom_fields": {
+                      "4578152156": "Not Started",
+                      "5678904321": "On Hold"
+                    },
+                    "default_access_level": "admin",
+                    "default_view": "calendar",
+                    "due_date": "2019-09-15",
+                    "due_on": "2019-09-15",
+                    "followers": "12345,23456",
+                    "gid": "12345",
+                    "html_notes": "<body>These are things we need to purchase.</body>",
+                    "members": [
+                      {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "minimum_access_level_for_customization": "admin",
+                    "minimum_access_level_for_sharing": "admin",
+                    "modified_at": "2012-02-22T02:06:58.147Z",
+                    "name": "Stuff to buy",
+                    "notes": "These are things we need to purchase.",
+                    "owner": "12345",
+                    "privacy_setting": "public_to_workspace",
+                    "public": false,
+                    "resource_type": "task",
+                    "start_on": "2019-09-14",
+                    "team": "12345",
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the full record of the newly created project.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid data, permissions issues, or server errors.
-        
+            dict[str, Any]: Successfully retrieved projects.
+
         Tags:
-            create, projects, management, workspace, team, important
+            Projects
         """
         request_body = {
             'data': data,
@@ -1689,20 +2444,19 @@ class AsanaApp(APIApplication):
 
     def get_aproject(self, project_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Fetches a project's complete record, optionally including additional fields and formatting the output for readability.
-        
+        Retrieves a specific project's details using its unique identifier (project_gid) with options to customize the response fields and formatting.
+
         Args:
-            opt_fields: Optional fields to include in the response. Specify a comma-separated list of properties to be included.
-            opt_pretty: If set, formats the response in a pretty format with line breaks and indentation.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the project's details.
-        
-        Raises:
-            Exception: Raises an exception if the HTTP request or JSON parsing fails.
-        
+            dict[str, Any]: Successfully retrieved the requested project.
+
         Tags:
-            projects, fetch, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -1714,21 +2468,290 @@ class AsanaApp(APIApplication):
 
     def update_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates a specific project by modifying provided fields, returning the complete updated project record while preserving unspecified fields.
-        
+        Updates an existing project at the specified path, replacing its entire resource with the provided request content, using the PUT method.
+
         Args:
-            data: Dictionary containing fields to update. Only specified fields will be modified (keys: field names, values: new values).
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Provides formatted output (line breaks/indentation) at the cost of performance. Recommended for debugging only.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "archived": false,
+                    "color": "light-green",
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "current_status": {
+                      "author": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "color": "red",
+                      "created_at": "2012-02-22T02:06:58.147Z",
+                      "created_by": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "gid": "12345",
+                      "html_text": "<body>The project <strong>is</strong> moving forward according to plan...</body>",
+                      "modified_at": "2012-02-22T02:06:58.147Z",
+                      "resource_type": "task",
+                      "text": "The project is moving forward according to plan...",
+                      "title": "Status Update - Jun 15"
+                    },
+                    "current_status_update": {
+                      "gid": "12345",
+                      "resource_subtype": "project_status_update",
+                      "resource_type": "task",
+                      "title": "Status Update - Jun 15"
+                    },
+                    "custom_field_settings": [
+                      {
+                        "custom_field": {
+                          "asana_created_field": "priority",
+                          "created_by": {
+                            "gid": "12345",
+                            "name": "Greg Sanchez",
+                            "resource_type": "task"
+                          },
+                          "currency_code": "EUR",
+                          "custom_label": "gold pieces",
+                          "custom_label_position": "suffix",
+                          "date_value": {
+                            "date": "2024-08-23",
+                            "date_time": "2024-08-23T22:00:00.000Z"
+                          },
+                          "description": "Development team priority",
+                          "display_value": "blue",
+                          "enabled": true,
+                          "enum_options": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "enum_value": {
+                            "color": "blue",
+                            "enabled": true,
+                            "gid": "12345",
+                            "name": "Low",
+                            "resource_type": "task"
+                          },
+                          "format": "custom",
+                          "gid": "12345",
+                          "has_notifications_enabled": true,
+                          "id_prefix": "ID",
+                          "is_formula_field": false,
+                          "is_global_to_workspace": true,
+                          "is_value_read_only": false,
+                          "multi_enum_values": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "name": "Status",
+                          "number_value": 5.2,
+                          "people_value": [
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            },
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "precision": 2,
+                          "representation_type": "number",
+                          "resource_subtype": "text",
+                          "resource_type": "task",
+                          "text_value": "Some Value",
+                          "type": "enum"
+                        },
+                        "gid": "12345",
+                        "is_important": false,
+                        "parent": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "resource_type": "task"
+                      },
+                      {
+                        "custom_field": {
+                          "asana_created_field": "priority",
+                          "created_by": {
+                            "gid": "12345",
+                            "name": "Greg Sanchez",
+                            "resource_type": "task"
+                          },
+                          "currency_code": "EUR",
+                          "custom_label": "gold pieces",
+                          "custom_label_position": "suffix",
+                          "date_value": {
+                            "date": "2024-08-23",
+                            "date_time": "2024-08-23T22:00:00.000Z"
+                          },
+                          "description": "Development team priority",
+                          "display_value": "blue",
+                          "enabled": true,
+                          "enum_options": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "enum_value": {
+                            "color": "blue",
+                            "enabled": true,
+                            "gid": "12345",
+                            "name": "Low",
+                            "resource_type": "task"
+                          },
+                          "format": "custom",
+                          "gid": "12345",
+                          "has_notifications_enabled": true,
+                          "id_prefix": "ID",
+                          "is_formula_field": false,
+                          "is_global_to_workspace": true,
+                          "is_value_read_only": false,
+                          "multi_enum_values": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "name": "Status",
+                          "number_value": 5.2,
+                          "people_value": [
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            },
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "precision": 2,
+                          "representation_type": "number",
+                          "resource_subtype": "text",
+                          "resource_type": "task",
+                          "text_value": "Some Value",
+                          "type": "date"
+                        },
+                        "gid": "12345",
+                        "is_important": false,
+                        "parent": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "resource_type": "task"
+                      }
+                    ],
+                    "custom_fields": {
+                      "4578152156": "Not Started",
+                      "5678904321": "On Hold"
+                    },
+                    "default_access_level": "admin",
+                    "default_view": "calendar",
+                    "due_date": "2019-09-15",
+                    "due_on": "2019-09-15",
+                    "followers": "12345,23456",
+                    "gid": "12345",
+                    "html_notes": "<body>These are things we need to purchase.</body>",
+                    "members": [
+                      {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "minimum_access_level_for_customization": "admin",
+                    "minimum_access_level_for_sharing": "admin",
+                    "modified_at": "2012-02-22T02:06:58.147Z",
+                    "name": "Stuff to buy",
+                    "notes": "These are things we need to purchase.",
+                    "owner": "12345",
+                    "privacy_setting": "public_to_workspace",
+                    "public": false,
+                    "resource_type": "task",
+                    "start_on": "2019-09-14",
+                    "team": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary representing the complete updated project resource with current field values.
-        
-        Raises:
-            HTTPError: Raised for invalid requests, authentication failures, or server errors during the API call.
-        
+            dict[str, Any]: Successfully updated the project.
+
         Tags:
-            projects, update, api, management, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -1744,19 +2767,18 @@ class AsanaApp(APIApplication):
 
     def delete_aproject(self, project_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes an existing project by making a DELETE request to the project's URL.
-        
+        Deletes a project identified by the project GID using the DELETE method at the path "/projects/{project_gid}", with optional support for pretty-printed output.
+
         Args:
-            opt_pretty: Provides the response in a ‘pretty’ format; useful for debugging purposes.
-        
+            project_gid (string): project_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            An empty data record in JSON format.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully deleted the specified project.
+
         Tags:
-            delete, project, management, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -1768,21 +2790,35 @@ class AsanaApp(APIApplication):
 
     def duplicate_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Duplicates a project by creating and returning a job for asynchronous handling.
-        
+        Creates a duplicate of the specified project, including its structure and dependencies, while allowing optional field customization.
+
         Args:
-            data: Dictionary containing project data (optional).
-            opt_fields: Comma-separated list of optional fields to include in the response (optional).
-            opt_pretty: Request 'pretty' output (e.g., properly formatted JSON) for debugging (optional).
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'new_project,new_project.name,new_project_template,new_project_template.name,new_task,new_task.created_by,new_task.name,new_task.resource_subtype,new_task_template,new_task_template.name,resource_subtype,status'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "include": "g,g",
+                    "name": "New Project Name",
+                    "schedule_dates": {
+                      "due_on": "2019-05-21",
+                      "should_skip_weekends": true,
+                      "start_on": "2019-05-21"
+                    },
+                    "team": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the job for project duplication.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request encounters an error (e.g., 4xx or 5xx status codes).
-        
+            dict[str, Any]: Successfully created the job to handle duplication.
+
         Tags:
-            async_job, project, management, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -1798,22 +2834,24 @@ class AsanaApp(APIApplication):
 
     def get_projects_atask_is_in(self, task_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve a compact list of all projects that contain the specified task, formatted as paginated results.
-        
+        Retrieves the projects associated with a specific task using the GET method, allowing for optional customization of output fields and pagination.
+
         Args:
-            limit: Results per page (1-100). Controls the number of projects returned per response.
-            offset: Offset token for paginated requests. Use the token from previous responses to fetch subsequent pages.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Format response with indentation/line breaks for readability (debugging only).
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,offset,owner,path,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing paginated project data in compact format, with projects as values.
-        
-        Raises:
-            HTTPError: Raised when the API request fails (e.g., invalid parameters or authentication errors).
-        
+            dict[str, Any]: Successfully retrieved the projects for the given task.
+
         Tags:
-            projects, retrieve, pagination, compact-format, task-management, important
+            Projects
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -1825,23 +2863,25 @@ class AsanaApp(APIApplication):
 
     def get_ateam_sprojects(self, team_gid, limit=None, offset=None, archived=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Fetches a team’s projects, returning compact project records with optional pagination, archival status filtering, and field inclusion control.
-        
+        Retrieves a paginated list of projects associated with a specific team, supporting optional filtering for archived status and custom field selection.
+
         Args:
-            archived: Only return projects whose `archived` field matches this parameter's value. If None, returns all projects regardless of archival status.
-            limit: Results per page (1-100). Controls the number of projects returned per request.
-            offset: Offset token for pagination. Use the token from a prior paginated response to fetch subsequent pages.
-            opt_fields: Comma-separated list of optional properties to include in the response. Omitting this returns compact resources by default.
-            opt_pretty: If True, formats the JSON response for readability (increases response size and processing time). Primarily for debugging.
-        
+            team_gid (string): team_gid
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            archived (string): Only return projects whose `archived` field takes on the value of this parameter. Example: 'false'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,offset,owner,path,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing a list of compact project records and pagination metadata (if applicable).
-        
-        Raises:
-            HTTPError: Raised when the API request fails, such as due to invalid parameters, authentication issues, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the requested team's projects.
+
         Tags:
-            projects, list, pagination, api-client, important
+            Projects
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -1853,21 +2893,291 @@ class AsanaApp(APIApplication):
 
     def create_aproject_in_ateam(self, team_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a project shared with the specified team and returns the full record of the newly created project.
-        
+        Adds a project to a team using the GitHub API and returns a success status.
+
         Args:
-            data: A dictionary containing the project data to be created.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Whether to return formatted JSON for improved readability (use sparingly for debugging).
-        
+            team_gid (string): team_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "archived": false,
+                    "color": "light-green",
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "current_status": {
+                      "author": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "color": "complete",
+                      "created_at": "2012-02-22T02:06:58.147Z",
+                      "created_by": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "gid": "12345",
+                      "html_text": "<body>The project <strong>is</strong> moving forward according to plan...</body>",
+                      "modified_at": "2012-02-22T02:06:58.147Z",
+                      "resource_type": "task",
+                      "text": "The project is moving forward according to plan...",
+                      "title": "Status Update - Jun 15"
+                    },
+                    "current_status_update": {
+                      "gid": "12345",
+                      "resource_subtype": "project_status_update",
+                      "resource_type": "task",
+                      "title": "Status Update - Jun 15"
+                    },
+                    "custom_field_settings": [
+                      {
+                        "custom_field": {
+                          "asana_created_field": "priority",
+                          "created_by": {
+                            "gid": "12345",
+                            "name": "Greg Sanchez",
+                            "resource_type": "task"
+                          },
+                          "currency_code": "EUR",
+                          "custom_label": "gold pieces",
+                          "custom_label_position": "suffix",
+                          "date_value": {
+                            "date": "2024-08-23",
+                            "date_time": "2024-08-23T22:00:00.000Z"
+                          },
+                          "description": "Development team priority",
+                          "display_value": "blue",
+                          "enabled": true,
+                          "enum_options": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "enum_value": {
+                            "color": "blue",
+                            "enabled": true,
+                            "gid": "12345",
+                            "name": "Low",
+                            "resource_type": "task"
+                          },
+                          "format": "custom",
+                          "gid": "12345",
+                          "has_notifications_enabled": true,
+                          "id_prefix": "ID",
+                          "is_formula_field": false,
+                          "is_global_to_workspace": true,
+                          "is_value_read_only": false,
+                          "multi_enum_values": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "name": "Status",
+                          "number_value": 5.2,
+                          "people_value": [
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            },
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "precision": 2,
+                          "representation_type": "number",
+                          "resource_subtype": "text",
+                          "resource_type": "task",
+                          "text_value": "Some Value",
+                          "type": "enum"
+                        },
+                        "gid": "12345",
+                        "is_important": false,
+                        "parent": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "resource_type": "task"
+                      },
+                      {
+                        "custom_field": {
+                          "asana_created_field": "priority",
+                          "created_by": {
+                            "gid": "12345",
+                            "name": "Greg Sanchez",
+                            "resource_type": "task"
+                          },
+                          "currency_code": "EUR",
+                          "custom_label": "gold pieces",
+                          "custom_label_position": "suffix",
+                          "date_value": {
+                            "date": "2024-08-23",
+                            "date_time": "2024-08-23T22:00:00.000Z"
+                          },
+                          "description": "Development team priority",
+                          "display_value": "blue",
+                          "enabled": true,
+                          "enum_options": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "enum_value": {
+                            "color": "blue",
+                            "enabled": true,
+                            "gid": "12345",
+                            "name": "Low",
+                            "resource_type": "task"
+                          },
+                          "format": "custom",
+                          "gid": "12345",
+                          "has_notifications_enabled": true,
+                          "id_prefix": "ID",
+                          "is_formula_field": false,
+                          "is_global_to_workspace": true,
+                          "is_value_read_only": false,
+                          "multi_enum_values": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "name": "Status",
+                          "number_value": 5.2,
+                          "people_value": [
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            },
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "precision": 2,
+                          "representation_type": "number",
+                          "resource_subtype": "text",
+                          "resource_type": "task",
+                          "text_value": "Some Value",
+                          "type": "people"
+                        },
+                        "gid": "12345",
+                        "is_important": false,
+                        "parent": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "resource_type": "task"
+                      }
+                    ],
+                    "custom_fields": {
+                      "4578152156": "Not Started",
+                      "5678904321": "On Hold"
+                    },
+                    "default_access_level": "admin",
+                    "default_view": "calendar",
+                    "due_date": "2019-09-15",
+                    "due_on": "2019-09-15",
+                    "followers": "12345,23456",
+                    "gid": "12345",
+                    "html_notes": "<body>These are things we need to purchase.</body>",
+                    "members": [
+                      {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "minimum_access_level_for_customization": "admin",
+                    "minimum_access_level_for_sharing": "admin",
+                    "modified_at": "2012-02-22T02:06:58.147Z",
+                    "name": "Stuff to buy",
+                    "notes": "These are things we need to purchase.",
+                    "owner": "12345",
+                    "privacy_setting": "public_to_workspace",
+                    "public": false,
+                    "resource_type": "task",
+                    "start_on": "2019-09-14",
+                    "team": "12345",
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing the full record of the created project, including all requested fields.
-        
-        Raises:
-            HTTPError: If the HTTP request fails due to authorization issues, invalid data, or server errors.
-        
+            dict[str, Any]: Successfully created the specified project.
+
         Tags:
-            project, create, async-job, team, management, important
+            Projects
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -1883,23 +3193,25 @@ class AsanaApp(APIApplication):
 
     def get_all_projects_in_aworkspace(self, workspace_gid, limit=None, offset=None, archived=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Fetches all project records in a workspace, returning them as a dictionary.
-        
+        Retrieves a list of projects for a specified workspace, allowing customization through parameters such as limit, offset, archived status, and optional fields, using the GET method.
+
         Args:
-            archived: Only return projects whose `archived` field matches this parameter.
-            limit: Number of objects to return per page, between 1 and 100.
-            offset: Offset token for pagination, returned by a previous API request.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Flag to enable pretty JSON output, useful for debugging.
-        
+            workspace_gid (string): workspace_gid
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            archived (string): Only return projects whose `archived` field takes on the value of this parameter. Example: 'false'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,offset,owner,path,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the compact project records.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request fails with a status code indicating an error.
-        
+            dict[str, Any]: Successfully retrieved the requested workspace's projects.
+
         Tags:
-            list, projects, workspace, management, important
+            Projects
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -1911,21 +3223,291 @@ class AsanaApp(APIApplication):
 
     def create_aproject_in_aworkspace(self, workspace_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Create a project in a workspace, returning the full record of the newly created project.
-        
+        Creates a new project within the specified workspace using optional query parameters to control response fields and formatting.
+
         Args:
-            data: Dictionary containing project data. If not provided, it defaults to None.
-            opt_fields: Optional fields to include in the response. Specify as a comma-separated list of property names.
-            opt_pretty: Optional flag to provide pretty-printed output, useful for debugging purposes.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "archived": false,
+                    "color": "light-green",
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "current_status": {
+                      "author": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "color": "complete",
+                      "created_at": "2012-02-22T02:06:58.147Z",
+                      "created_by": {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      "gid": "12345",
+                      "html_text": "<body>The project <strong>is</strong> moving forward according to plan...</body>",
+                      "modified_at": "2012-02-22T02:06:58.147Z",
+                      "resource_type": "task",
+                      "text": "The project is moving forward according to plan...",
+                      "title": "Status Update - Jun 15"
+                    },
+                    "current_status_update": {
+                      "gid": "12345",
+                      "resource_subtype": "project_status_update",
+                      "resource_type": "task",
+                      "title": "Status Update - Jun 15"
+                    },
+                    "custom_field_settings": [
+                      {
+                        "custom_field": {
+                          "asana_created_field": "priority",
+                          "created_by": {
+                            "gid": "12345",
+                            "name": "Greg Sanchez",
+                            "resource_type": "task"
+                          },
+                          "currency_code": "EUR",
+                          "custom_label": "gold pieces",
+                          "custom_label_position": "suffix",
+                          "date_value": {
+                            "date": "2024-08-23",
+                            "date_time": "2024-08-23T22:00:00.000Z"
+                          },
+                          "description": "Development team priority",
+                          "display_value": "blue",
+                          "enabled": true,
+                          "enum_options": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "enum_value": {
+                            "color": "blue",
+                            "enabled": true,
+                            "gid": "12345",
+                            "name": "Low",
+                            "resource_type": "task"
+                          },
+                          "format": "custom",
+                          "gid": "12345",
+                          "has_notifications_enabled": true,
+                          "id_prefix": "ID",
+                          "is_formula_field": false,
+                          "is_global_to_workspace": true,
+                          "is_value_read_only": false,
+                          "multi_enum_values": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "name": "Status",
+                          "number_value": 5.2,
+                          "people_value": [
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            },
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "precision": 2,
+                          "representation_type": "number",
+                          "resource_subtype": "text",
+                          "resource_type": "task",
+                          "text_value": "Some Value",
+                          "type": "enum"
+                        },
+                        "gid": "12345",
+                        "is_important": false,
+                        "parent": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "resource_type": "task"
+                      },
+                      {
+                        "custom_field": {
+                          "asana_created_field": "priority",
+                          "created_by": {
+                            "gid": "12345",
+                            "name": "Greg Sanchez",
+                            "resource_type": "task"
+                          },
+                          "currency_code": "EUR",
+                          "custom_label": "gold pieces",
+                          "custom_label_position": "suffix",
+                          "date_value": {
+                            "date": "2024-08-23",
+                            "date_time": "2024-08-23T22:00:00.000Z"
+                          },
+                          "description": "Development team priority",
+                          "display_value": "blue",
+                          "enabled": true,
+                          "enum_options": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "enum_value": {
+                            "color": "blue",
+                            "enabled": true,
+                            "gid": "12345",
+                            "name": "Low",
+                            "resource_type": "task"
+                          },
+                          "format": "custom",
+                          "gid": "12345",
+                          "has_notifications_enabled": true,
+                          "id_prefix": "ID",
+                          "is_formula_field": false,
+                          "is_global_to_workspace": true,
+                          "is_value_read_only": false,
+                          "multi_enum_values": [
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            },
+                            {
+                              "color": "blue",
+                              "enabled": true,
+                              "gid": "12345",
+                              "name": "Low",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "name": "Status",
+                          "number_value": 5.2,
+                          "people_value": [
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            },
+                            {
+                              "gid": "12345",
+                              "name": "Greg Sanchez",
+                              "resource_type": "task"
+                            }
+                          ],
+                          "precision": 2,
+                          "representation_type": "number",
+                          "resource_subtype": "text",
+                          "resource_type": "task",
+                          "text_value": "Some Value",
+                          "type": "people"
+                        },
+                        "gid": "12345",
+                        "is_important": false,
+                        "parent": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "resource_type": "task"
+                      }
+                    ],
+                    "custom_fields": {
+                      "4578152156": "Not Started",
+                      "5678904321": "On Hold"
+                    },
+                    "default_access_level": "admin",
+                    "default_view": "calendar",
+                    "due_date": "2019-09-15",
+                    "due_on": "2019-09-15",
+                    "followers": "12345,23456",
+                    "gid": "12345",
+                    "html_notes": "<body>These are things we need to purchase.</body>",
+                    "members": [
+                      {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "name": "Greg Sanchez",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "minimum_access_level_for_customization": "admin",
+                    "minimum_access_level_for_sharing": "admin",
+                    "modified_at": "2012-02-22T02:06:58.147Z",
+                    "name": "Stuff to buy",
+                    "notes": "These are things we need to purchase.",
+                    "owner": "12345",
+                    "privacy_setting": "public_to_workspace",
+                    "public": false,
+                    "resource_type": "task",
+                    "start_on": "2019-09-14",
+                    "team": "12345",
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the full record of the newly created project.
-        
-        Raises:
-            HTTPError: Raised if there is an issue with the HTTP request or response, such as a non-success status code.
-        
+            dict[str, Any]: Successfully created a new project in the specified workspace.
+
         Tags:
-            create, project, workspace, api-call, important
+            Projects
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -1941,21 +3523,31 @@ class AsanaApp(APIApplication):
 
     def add_acustom_field_to_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Add a custom field to a project, creating a custom field setting for the project.
-        
+        Adds a custom field setting to a specified project using the POST method via the API endpoint "/projects/{project_gid}/addCustomFieldSetting", allowing optional query parameters for field selection and response formatting.
+
         Args:
-            data: Dictionary containing custom field data for the project.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Boolean indicating whether the response should be formatted for readability.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'custom_field,custom_field.asana_created_field,custom_field.created_by,custom_field.created_by.name,custom_field.currency_code,custom_field.custom_label,custom_field.custom_label_position,custom_field.date_value,custom_field.date_value.date,custom_field.date_value.date_time,custom_field.description,custom_field.display_value,custom_field.enabled,custom_field.enum_options,custom_field.enum_options.color,custom_field.enum_options.enabled,custom_field.enum_options.name,custom_field.enum_value,custom_field.enum_value.color,custom_field.enum_value.enabled,custom_field.enum_value.name,custom_field.format,custom_field.has_notifications_enabled,custom_field.id_prefix,custom_field.is_formula_field,custom_field.is_global_to_workspace,custom_field.is_value_read_only,custom_field.multi_enum_values,custom_field.multi_enum_values.color,custom_field.multi_enum_values.enabled,custom_field.multi_enum_values.name,custom_field.name,custom_field.number_value,custom_field.people_value,custom_field.people_value.name,custom_field.precision,custom_field.representation_type,custom_field.resource_subtype,custom_field.text_value,custom_field.type,is_important,parent,parent.name,project,project.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "custom_field": "14916",
+                    "insert_after": "1331",
+                    "insert_before": "1331",
+                    "is_important": true
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing the response from the API.
-        
-        Raises:
-            HTTPError: Raised if the API request encounters an HTTP error, such as a 404 or 500 status code.
-        
+            dict[str, Any]: Successfully added the custom field to the project.
+
         Tags:
-            customization, projects, async_job, management, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -1971,20 +3563,27 @@ class AsanaApp(APIApplication):
 
     def remove_acustom_field_from_aproject(self, project_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove a custom field setting from a specified project by sending a POST request with the required data.
-        
+        Removes a custom field setting from a specified project using the Asana API by sending a POST request to the "/projects/{project_gid}/removeCustomFieldSetting" endpoint.
+
         Args:
-            data: Dictionary containing the custom field data to be removed from the project. Must include necessary identifiers.
-            opt_pretty: Provides 'pretty' output formatting (readable JSON with indentation). Use only during debugging due to performance impact.
-        
+            project_gid (string): project_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "custom_field": "14916"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the API response data after removing the custom field.
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails (non-2xx status code), indicating unsuccessful removal.
-        
+            dict[str, Any]: Successfully removed the custom field from the project.
+
         Tags:
-            remove, custom-field, project, management, async_job, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2000,20 +3599,19 @@ class AsanaApp(APIApplication):
 
     def get_task_count_of_aproject(self, project_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves the task count of a project, returning an object with task count fields. All fields are excluded by default, requiring opt-in via the `opt_fields` parameter.
-        
+        Retrieves task counts for a specified project using the Asana API, allowing users to obtain an object containing task count fields by opting in with the `opt_fields` parameter.
+
         Args:
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: Provides the response in a "pretty" format; advisable only for debugging due to increased response time and size.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'num_completed_milestones,num_completed_tasks,num_incomplete_milestones,num_incomplete_tasks,num_milestones,num_tasks'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the task count fields of the project.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request encounters a problem, such as a bad status code.
-        
+            dict[str, Any]: Successfully retrieved the requested project's task counts.
+
         Tags:
-            task, count, project, important, management
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2025,21 +3623,28 @@ class AsanaApp(APIApplication):
 
     def add_users_to_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds users to a project as members, potentially setting them as followers based on notification settings, and returns the updated project record.
-        
+        Adds members to a project specified by its project GID using the POST method.
+
         Args:
-            data: Dictionary of user data specifying which users to add to the project.
-            opt_fields: Comma-separated list of fields to include in addition to the compact resource.
-            opt_pretty: Sets the response format to pretty-printed JSON for readability.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "members": "521621,621373"
+                  }
+                }
+                ```
+
         Returns:
-            Updated project record as a JSON object.
-        
-        Raises:
-            requests.RequestException: Raised if a problem occurs during the request, such as network errors or invalid responses.
-        
+            dict[str, Any]: Successfully added members to the project.
+
         Tags:
-            add, projects, members, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2055,21 +3660,28 @@ class AsanaApp(APIApplication):
 
     def remove_users_from_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Removes specified users from a project and returns the updated project record.
-        
+        Removes specified members from a project using their identifiers and returns an updated project object or error status.
+
         Args:
-            data: A dictionary containing details of users to remove from the project.
-            opt_fields: A comma-separated list of optional properties to include in the response.
-            opt_pretty: Provides the response in a 'pretty' format for debugging purposes.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "members": "521621,621373"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the updated project record.
-        
-        Raises:
-            Exception: An exception may be raised if the HTTP request fails or if the server returns an error status.
-        
+            dict[str, Any]: Successfully removed the members from the project.
+
         Tags:
-            remove, project, management, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2085,21 +3697,28 @@ class AsanaApp(APIApplication):
 
     def add_followers_to_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds followers to a project, promoting specified users to members if not already part of the project. Returns the updated project record.
-        
+        Adds specified users as followers to a project and returns a success or error status.
+
         Args:
-            data: Dictionary containing data required to add followers (exact structure depends on API requirements).
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: If True, formats the response with improved readability at the cost of performance.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "followers": "521621,621373"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the updated project record with new followers.
-        
-        Raises:
-            HTTPError: If the API request fails, typically due to invalid data, authentication issues, or server errors.
-        
+            dict[str, Any]: Successfully added followers to the project.
+
         Tags:
-            projects, add-followers, membership, api-client, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2115,21 +3734,28 @@ class AsanaApp(APIApplication):
 
     def remove_followers_from_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove followers from a project without affecting membership status.
-        
+        Removes specified followers from a project identified by its GID, updating the project's record without affecting its membership status.
+
         Args:
-            data: Dictionary containing user data to remove followers. Can be None if no users are specified.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Provides the response in a readable format, primarily for debugging.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'archived,color,completed,completed_at,completed_by,completed_by.name,created_at,created_from_template,created_from_template.name,current_status,current_status.author,current_status.author.name,current_status.color,current_status.created_at,current_status.created_by,current_status.created_by.name,current_status.html_text,current_status.modified_at,current_status.text,current_status.title,current_status_update,current_status_update.resource_subtype,current_status_update.title,custom_field_settings,custom_field_settings.custom_field,custom_field_settings.custom_field.asana_created_field,custom_field_settings.custom_field.created_by,custom_field_settings.custom_field.created_by.name,custom_field_settings.custom_field.currency_code,custom_field_settings.custom_field.custom_label,custom_field_settings.custom_field.custom_label_position,custom_field_settings.custom_field.date_value,custom_field_settings.custom_field.date_value.date,custom_field_settings.custom_field.date_value.date_time,custom_field_settings.custom_field.description,custom_field_settings.custom_field.display_value,custom_field_settings.custom_field.enabled,custom_field_settings.custom_field.enum_options,custom_field_settings.custom_field.enum_options.color,custom_field_settings.custom_field.enum_options.enabled,custom_field_settings.custom_field.enum_options.name,custom_field_settings.custom_field.enum_value,custom_field_settings.custom_field.enum_value.color,custom_field_settings.custom_field.enum_value.enabled,custom_field_settings.custom_field.enum_value.name,custom_field_settings.custom_field.format,custom_field_settings.custom_field.has_notifications_enabled,custom_field_settings.custom_field.id_prefix,custom_field_settings.custom_field.is_formula_field,custom_field_settings.custom_field.is_global_to_workspace,custom_field_settings.custom_field.is_value_read_only,custom_field_settings.custom_field.multi_enum_values,custom_field_settings.custom_field.multi_enum_values.color,custom_field_settings.custom_field.multi_enum_values.enabled,custom_field_settings.custom_field.multi_enum_values.name,custom_field_settings.custom_field.name,custom_field_settings.custom_field.number_value,custom_field_settings.custom_field.people_value,custom_field_settings.custom_field.people_value.name,custom_field_settings.custom_field.precision,custom_field_settings.custom_field.representation_type,custom_field_settings.custom_field.resource_subtype,custom_field_settings.custom_field.text_value,custom_field_settings.custom_field.type,custom_field_settings.is_important,custom_field_settings.parent,custom_field_settings.parent.name,custom_field_settings.project,custom_field_settings.project.name,custom_fields,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,default_access_level,default_view,due_date,due_on,followers,followers.name,html_notes,icon,members,members.name,minimum_access_level_for_customization,minimum_access_level_for_sharing,modified_at,name,notes,owner,permalink_url,privacy_setting,project_brief,public,start_on,team,team.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "followers": "521621,621373"
+                  }
+                }
+                ```
+
         Returns:
-            The updated project record as a dictionary.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully removed followers from the project.
+
         Tags:
-            remove, followers, project, management, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2145,21 +3771,31 @@ class AsanaApp(APIApplication):
 
     def create_aproject_template_from_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a project template from a project by sending a POST request and returns the response in JSON format, asynchronously handling the template creation.
-        
+        Saves a project as a template using the POST method at "/projects/{project_gid}/saveAsTemplate," allowing for the creation of new projects with predefined structures based on existing projects.
+
         Args:
-            data: Dictionary containing project data. Defaults to None.
-            opt_fields: Optional fields to include in the response. Pass as a comma-separated list. Defaults to None.
-            opt_pretty: Use this to format the JSON output for readability. Defaults to None.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'new_project,new_project.name,new_project_template,new_project_template.name,new_task,new_task.created_by,new_task.name,new_task.resource_subtype,new_task_template,new_task_template.name,resource_subtype,status'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "name": "New Project Template",
+                    "public": true,
+                    "team": "12345",
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the created project template details.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully created the job to handle project template creation.
+
         Tags:
-            create, project, template, async_job, important
+            Projects
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2175,20 +3811,19 @@ class AsanaApp(APIApplication):
 
     def get_aproject_brief(self, project_brief_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a project brief by optionally including specified fields and formatting the response.
-        
+        Retrieves a specific project brief identified by its unique identifier and returns its details, optionally including additional fields or formatted responses.
+
         Args:
-            opt_fields: An optional comma-separated list of properties to include beyond the default compact resource.
-            opt_pretty: Provides the response in a human-readable format, useful for debugging.
-        
+            project_brief_gid (string): project_brief_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'html_text,permalink_url,project,project.name,text,title'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the project brief details.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the record for a project brief.
+
         Tags:
-            project-brief, data-fetch, api-call, important
+            Project briefs
         """
         if project_brief_gid is None:
             raise ValueError("Missing required parameter 'project_brief_gid'")
@@ -2200,21 +3835,32 @@ class AsanaApp(APIApplication):
 
     def update_aproject_brief(self, project_brief_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing project brief by making a PUT request and returns the complete updated record.
-        
+        Updates or replaces a project brief with the specified ID and returns the modified resource.
+
         Args:
-            data: Dictionary containing fields to update in the project brief. Only specified fields will be updated.
-            opt_fields: Optional comma-separated list of fields to include in the response beyond the default compact resource.
-            opt_pretty: Provides 'pretty' output in a readable format, advisable for debugging purposes only.
-        
+            project_brief_gid (string): project_brief_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'html_text,permalink_url,project,project.name,text,title'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "gid": "12345",
+                    "html_text": "<body>This is a <strong>project brief</strong>.</body>",
+                    "resource_type": "task",
+                    "text": "This is a project brief.",
+                    "title": "Stuff to buy \u2014 Project Brief"
+                  }
+                }
+                ```
+
         Returns:
-            The complete updated project brief record as a dictionary.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully updated the project brief.
+
         Tags:
-            update, project-briefs, management, important
+            Project briefs
         """
         if project_brief_gid is None:
             raise ValueError("Missing required parameter 'project_brief_gid'")
@@ -2230,13 +3876,18 @@ class AsanaApp(APIApplication):
 
     def delete_aproject_brief(self, project_brief_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Failed to extract docstring information
-        
+        Deletes a specific project brief identified by its GID using the Asana API and returns an empty data record upon successful deletion.
+
         Args:
-            None: This function takes no arguments
-        
+            project_brief_gid (string): project_brief_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Unknown return value
+            dict[str, Any]: Successfully deleted the specified project brief.
+
+        Tags:
+            Project briefs
         """
         if project_brief_gid is None:
             raise ValueError("Missing required parameter 'project_brief_gid'")
@@ -2248,21 +3899,32 @@ class AsanaApp(APIApplication):
 
     def create_aproject_brief(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new project brief and returns the full record of the newly created brief.
-        
+        Creates a project brief for the specified project using the provided data and returns the newly created brief.
+
         Args:
-            data: A dictionary containing the data required to create a project brief.
-            opt_fields: A comma-separated list of properties to include in the response that are excluded by default.
-            opt_pretty: A query parameter that provides the response in a readable format, useful for debugging.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'html_text,permalink_url,project,project.name,text,title'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "gid": "12345",
+                    "html_text": "<body>This is a <strong>project brief</strong>.</body>",
+                    "resource_type": "task",
+                    "text": "This is a project brief.",
+                    "title": "Stuff to buy \u2014 Project Brief"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the full record of the newly created project brief.
-        
-        Raises:
-            Exception: An exception may be raised if there is an issue with the request (e.g., network errors or HTTP errors).
-        
+            dict[str, Any]: Successfully created a new project brief.
+
         Tags:
-            create, project, brief, management, important
+            Project briefs
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2278,20 +3940,19 @@ class AsanaApp(APIApplication):
 
     def get_aproject_membership(self, project_membership_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve a project membership and its associated project record.
-        
+        Retrieves details of a specific project membership by its ID, including optional fields and formatted output.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response. Excluded by default in compact resources.
-            opt_pretty: When true, returns JSON with proper formatting and indentation for readability. Use sparingly due to performance implications.
-        
+            project_membership_gid (string): project_membership_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'access_level,member,member.name,parent,parent.name,project,project.name,user,user.name,write_access'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the complete project record for the requested membership.
-        
-        Raises:
-            HTTPError: Raised if the API request fails, typically due to invalid parameters or authentication issues.
-        
+            dict[str, Any]: Successfully retrieved the requested project membership.
+
         Tags:
-            project-memberships, get, api-client, management, important
+            Project memberships
         """
         if project_membership_gid is None:
             raise ValueError("Missing required parameter 'project_membership_gid'")
@@ -2303,23 +3964,25 @@ class AsanaApp(APIApplication):
 
     def get_memberships_from_aproject(self, project_gid, opt_fields=None, user=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieves paginated project membership records for a specific project, returning compact data with optional fields.
-        
+        Retrieves a list of project memberships with optional query parameters for filtering and pagination.
+
         Args:
-            limit: Results per page (1-100). Controls the number of objects returned per page.
-            offset: Pagination token. Use the offset from a previous paginated response to retrieve the next page.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Return formatted JSON output for readability (increases response size and processing time).
-            user: User identifier ("me", email, or user GID). Filters memberships for the specified user.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'access_level,member,member.name,offset,parent,parent.name,path,uri'.
+            user (string): A string identifying a user. This can either be the string "me", an email, or the gid of a user. Example: 'me'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing paginated project membership records in compact format.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid parameters, authentication issues, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the requested project's memberships.
+
         Tags:
-            project-memberships, pagination, list, management, important
+            Project memberships
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2331,20 +3994,19 @@ class AsanaApp(APIApplication):
 
     def get_aproject_status(self, project_status_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Get the complete record for a single project status update. *Deprecated: new integrations should prefer the `/status_updates/{status_gid}` route.*
-        
+        Retrieves a specific project status by its GID using the "GET" method, allowing for optional fields and pretty-printing.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response (excluded by default).
-            opt_pretty: Provides formatted output with proper line breaks and indentation for readability during debugging.
-        
+            project_status_gid (string): project_status_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'author,author.name,color,created_at,created_by,created_by.name,html_text,modified_at,text,title'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the complete status update record.
-        
-        Raises:
-            HTTPError: If the API request fails, as determined by `response.raise_for_status()`.
-        
+            dict[str, Any]: Successfully retrieved the specified project's status updates.
+
         Tags:
-            project-statuses, get, management, deprecated, important
+            Project statuses
         """
         if project_status_gid is None:
             raise ValueError("Missing required parameter 'project_status_gid'")
@@ -2356,19 +4018,18 @@ class AsanaApp(APIApplication):
 
     def delete_aproject_status(self, project_status_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific existing project status update (deprecated: new integrations should use '/status_updates/{status_gid}').
-        
+        Deletes a specific project status by its GID and returns an empty response upon success.
+
         Args:
-            opt_pretty: Provides 'pretty' output formatting for JSON responses, increasing readability and size. Recommended only for debugging purposes.
-        
+            project_status_gid (string): project_status_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Empty dictionary representing successful deletion, after parsing the JSON response.
-        
-        Raises:
-            HTTPError: If the HTTP request fails due to client (4XX) or server (5XX) errors.
-        
+            dict[str, Any]: Successfully deleted the specified project status.
+
         Tags:
-            delete, deprecated, project-statuses, management, api, important
+            Project statuses
         """
         if project_status_gid is None:
             raise ValueError("Missing required parameter 'project_status_gid'")
@@ -2380,22 +4041,24 @@ class AsanaApp(APIApplication):
 
     def get_statuses_from_aproject(self, project_gid, opt_pretty=None, limit=None, offset=None, opt_fields=None) -> dict[str, Any]:
         """
-        Retrieve compact project status update records from a project, providing pagination and query parameters.
-        
+        Retrieves a list of project statuses for a specified project and returns paginated results with optional field filtering.
+
         Args:
-            limit: The number of objects to return per page. Must be between 1 and 100.
-            offset: An offset token for pagination. This should be an offset returned by a previous paginated request.
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: A boolean indicating whether to provide 'pretty' output, useful for debugging.
-        
+            project_gid (string): project_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'author,author.name,color,created_at,created_by,created_by.name,html_text,modified_at,offset,path,text,title,uri'.
+
         Returns:
-            A dictionary containing project status update records.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the specified project's status updates.
+
         Tags:
-            status, project, pagination, important
+            Project statuses
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2407,21 +4070,33 @@ class AsanaApp(APIApplication):
 
     def create_aproject_status(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new project status update (deprecated).
-        
+        Creates a new project status for the specified project and returns the created status, supporting optional field selection and pretty-printed responses.
+
         Args:
-            data: Dictionary containing the project status data. Must not be None.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Enable pretty formatting for human-readable output (debugging use).
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'author,author.name,color,created_at,created_by,created_by.name,html_text,modified_at,text,title'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "color": "complete",
+                    "gid": "12345",
+                    "html_text": "<body>The project <strong>is</strong> moving forward according to plan...</body>",
+                    "resource_type": "task",
+                    "text": "The project is moving forward according to plan...",
+                    "title": "Status Update - Jun 15"
+                  }
+                }
+                ```
+
         Returns:
-            Full record of the newly created project status update as a dictionary.
-        
-        Raises:
-            HTTPError: Raised for unsuccessful API responses (non-2xx status codes).
-        
+            dict[str, Any]: Successfully created a new story.
+
         Tags:
-            create, project-status, deprecated, async-job, important
+            Project statuses
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2437,20 +4112,19 @@ class AsanaApp(APIApplication):
 
     def get_aproject_template(self, project_template_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves the complete record for a single project template including optionally specified fields.
-        
+        Retrieves a specific project template by its unique identifier, providing configurable output fields and formatted responses.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include (default None). Excluded properties are omitted by default in compact responses.
-            opt_pretty: Enables formatted output with proper line breaks/indentation. Use sparingly due to performance impact (default None).
-        
+            project_template_gid (string): project_template_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,description,html_description,name,owner,public,requested_dates,requested_dates.description,requested_dates.name,requested_roles,requested_roles.name,team,team.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            dict[str, Any]: Complete project template record as a dictionary.
-        
-        Raises:
-            HTTPError: If the API request fails or returns a non-2xx status code.
-        
+            dict[str, Any]: Successfully retrieved the requested project template.
+
         Tags:
-            project-templates, get, management, api-call, important
+            Project templates
         """
         if project_template_gid is None:
             raise ValueError("Missing required parameter 'project_template_gid'")
@@ -2462,19 +4136,18 @@ class AsanaApp(APIApplication):
 
     def delete_aproject_template(self, project_template_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Delete a project template from the system and return an empty data record.
-        
+        Deletes an existing project template using the Asana API and returns an empty data record.
+
         Args:
-            opt_pretty: Provides formatted output with proper line breaks and indentation for readability. Recommended for debugging only as it increases response size and processing time.
-        
+            project_template_gid (string): project_template_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Empty dictionary after successful deletion, as returned by the server's JSON response.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request fails, typically due to invalid permissions, non-existent project template, or connection issues.
-        
+            dict[str, Any]: Successfully deleted the specified project template.
+
         Tags:
-            delete, project-templates, management, api, important
+            Project templates
         """
         if project_template_gid is None:
             raise ValueError("Missing required parameter 'project_template_gid'")
@@ -2486,24 +4159,25 @@ class AsanaApp(APIApplication):
 
     def get_multiple_project_templates(self, workspace=None, team=None, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves multiple project templates based on specified filters like team and workspace.
-        
+        Retrieves a list of project templates, optionally filtered by workspace or team, with support for pagination and field selection.
+
         Args:
-            limit: Results per page. It must be between 1 and 100.
-            offset: Offset token for pagination. Used to retrieve the next page of results.
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: Flag to provide the response in a readable format.
-            team: Team to filter projects on.
-            workspace: Workspace to filter results on.
-        
+            workspace (string): The workspace to filter results on. Example: '12345'.
+            team (string): The team to filter projects on. Example: '14916'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,description,html_description,name,offset,owner,path,public,requested_dates,requested_dates.description,requested_dates.name,requested_roles,requested_roles.name,team,team.name,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the compact project template records.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request to the API fails.
-        
+            dict[str, Any]: Successfully retrieved the requested team's or workspace's project templates.
+
         Tags:
-            list, project-templates, api, important
+            Project templates
         """
         url = f"{self.base_url}/project_templates"
         query_params = {k: v for k, v in [('workspace', workspace), ('team', team), ('limit', limit), ('offset', offset), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -2513,22 +4187,24 @@ class AsanaApp(APIApplication):
 
     def get_ateam_sproject_templates(self, team_gid, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve paginated list of compact project template records for a team.
-        
+        Retrieves a paginated list of project templates associated with a specific team, supporting optional filtering and field customization.
+
         Args:
-            limit: Results per page between 1-100. Controls the number of objects returned per page.
-            offset: Pagination token from a prior response. Required to fetch subsequent pages. Omit to get the first page.
-            opt_fields: Optional comma-separated field list to include additional properties excluded by default.
-            opt_pretty: Format response for readability (increases response size and processing time). Recommended only for debugging.
-        
+            team_gid (string): team_gid
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,description,html_description,name,offset,owner,path,public,requested_dates,requested_dates.description,requested_dates.name,requested_roles,requested_roles.name,team,team.name,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing parsed JSON response with project template records.
-        
-        Raises:
-            HTTPError: When the API request fails (e.g., network issues, invalid credentials, or server errors).
-        
+            dict[str, Any]: Successfully retrieved the requested team's project templates.
+
         Tags:
-            list, project-templates, pagination, api, important
+            Project templates
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -2540,21 +4216,52 @@ class AsanaApp(APIApplication):
 
     def instantiate_aproject_from_aproject_template(self, project_template_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Instantiates a project from a project template and returns an asynchronous job handle for the operation.
-        
+        Instantiates a project template using the Asana API, creating a new project based on the specified template and optionally including additional fields and formatting options.
+
         Args:
-            data: Dictionary containing project instantiation parameters. Typically includes 'gid' from template's 'requested_dates' array.
-            opt_fields: Comma-separated list of optional fields to include in the compact response.
-            opt_pretty: Format the response body for readability (may impact performance).
-        
+            project_template_gid (string): project_template_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'new_project,new_project.name,new_project_template,new_project_template.name,new_task,new_task.created_by,new_task.name,new_task.resource_subtype,new_task_template,new_task_template.name,resource_subtype,status'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "is_strict": true,
+                    "name": "New Project Name",
+                    "privacy_setting": "public_to_workspace",
+                    "public": true,
+                    "requested_dates": [
+                      {
+                        "gid": "1",
+                        "value": "2010-03-22T06:29:02.176Z"
+                      },
+                      {
+                        "gid": "1",
+                        "value": "1998-03-28T04:45:29.888Z"
+                      }
+                    ],
+                    "requested_roles": [
+                      {
+                        "gid": "1",
+                        "value": "123"
+                      },
+                      {
+                        "gid": "1",
+                        "value": "123"
+                      }
+                    ],
+                    "team": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the asynchronous job resource that manages the project instantiation process.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised for HTTP request failures (e.g., invalid template ID, insufficient permissions).
-        
+            dict[str, Any]: Successfully created the job to handle project instantiation.
+
         Tags:
-            project-templates, async-job, start, create, management, important
+            Project templates
         """
         if project_template_gid is None:
             raise ValueError("Missing required parameter 'project_template_gid'")
@@ -2570,19 +4277,29 @@ class AsanaApp(APIApplication):
 
     def trigger_arule(self, rule_trigger_gid, data=None) -> dict[str, Any]:
         """
-        Triggers a rule configured with an incoming web request trigger, sending provided data to the rule's endpoint.
-        
+        Triggers the execution of a specific rule using the API defined at the path "/rule_triggers/{rule_trigger_gid}/run" via a POST request.
+
         Args:
-            data: Dictionary containing data payload for the rule (keys/values determined by rule configuration). Use None for empty payload.
-        
+            rule_trigger_gid (string): rule_trigger_gid
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "action_data": {
+                      "jira_ticket_id": "123",
+                      "jira_ticket_name": "Test"
+                    },
+                    "resource": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the parsed JSON response from the triggered rule's endpoint
-        
-        Raises:
-            requests.HTTPError: Raised for HTTP 4XX/5XX responses from the API endpoint
-        
+            dict[str, Any]: Successfully triggered a rule.
+
         Tags:
-            rules, trigger, web-request, http-client, async-job, important
+            Rules
         """
         if rule_trigger_gid is None:
             raise ValueError("Missing required parameter 'rule_trigger_gid'")
@@ -2598,20 +4315,19 @@ class AsanaApp(APIApplication):
 
     def get_asection(self, section_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a complete record for a single section, potentially including additional fields and optional formatting.
-        
+        Retrieves information about a specific section using the "GET" method at the "/sections/{section_gid}" endpoint, optionally allowing customization with additional fields and pretty-printing.
+
         Args:
-            opt_fields: A comma-separated list of properties to include that are excluded by default.
-            opt_pretty: A flag to provide 'pretty' formatted output, useful for debugging by adding line breaks and indentation.
-        
+            section_gid (string): section_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,name,project,project.name,projects,projects.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the section's record.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved section.
+
         Tags:
-            section, data-fetch, important, resource-management
+            Sections
         """
         if section_gid is None:
             raise ValueError("Missing required parameter 'section_gid'")
@@ -2623,21 +4339,30 @@ class AsanaApp(APIApplication):
 
     def update_asection(self, section_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing section by making a PUT request to the specific section URL, updating only the provided fields.
-        
+        Updates or replaces a specific section resource identified by its GID, returning relevant status messages based on success or failure, with optional parameters for customizing output fields and formatting.
+
         Args:
-            data: A dict of fields to update in the section; currently, only the 'name' field is supported.
-            opt_fields: Optional fields to include in the response, provided as a comma-separated list.
-            opt_pretty: Enables 'pretty' output, useful for debugging purposes.
-        
+            section_gid (string): section_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,name,project,project.name,projects,projects.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "insert_after": "987654",
+                    "insert_before": "86420",
+                    "name": "Next Actions"
+                  }
+                }
+                ```
+
         Returns:
-            The complete updated section record.
-        
-        Raises:
-            requests.RequestException: Raised if the HTTP request fails for any reason.
-        
+            dict[str, Any]: Successfully updated the specified section.
+
         Tags:
-            update, section, management, important
+            Sections
         """
         if section_gid is None:
             raise ValueError("Missing required parameter 'section_gid'")
@@ -2653,19 +4378,18 @@ class AsanaApp(APIApplication):
 
     def delete_asection(self, section_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific empty section by sending a DELETE request to its URL. The last remaining section cannot be deleted.
-        
+        Deletes the specified section identified by its global ID and returns a success or error status.
+
         Args:
-            opt_pretty: Provides formatted output (e.g., indentation for readability in JSON responses). Recommended only for debugging due to performance impact.
-        
+            section_gid (string): section_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the server response data, or an empty data block if successful.
-        
-        Raises:
-            HTTPError: Raised when the request fails (e.g., invalid section ID, non-empty section, or attempting to delete the last remaining section).
-        
+            dict[str, Any]: Successfully deleted the specified section.
+
         Tags:
-            delete, section, management, http, important
+            Sections
         """
         if section_gid is None:
             raise ValueError("Missing required parameter 'section_gid'")
@@ -2677,22 +4401,24 @@ class AsanaApp(APIApplication):
 
     def get_sections_in_aproject(self, project_gid, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve sections in a project, returning compact records.
-        
+        Retrieves a list of sections associated with a specific project, supporting optional query parameters for pagination and field customization.
+
         Args:
-            limit: The number of objects to return per page. Must be between 1 and 100. Defaults to None.
-            offset: Offset token for pagination. Should be used if a next page is requested.
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: Enable 'pretty' formatting for the JSON output. Useful for debugging.
-        
+            project_gid (string): project_gid
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,name,offset,path,project,project.name,projects,projects.name,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing compact section records.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved sections in project.
+
         Tags:
-            list, management, project, sections, pagination, important
+            Sections
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2704,21 +4430,30 @@ class AsanaApp(APIApplication):
 
     def create_asection_in_aproject(self, project_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new section in a project and returns the full record of the newly created section.
-        
+        Creates a new section in a specified project using the Asana API and returns a status message.
+
         Args:
-            data: Dictionary containing section data to create.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Enables pretty-printed JSON output for readability during debugging.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,name,project,project.name,projects,projects.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "insert_after": "987654",
+                    "insert_before": "86420",
+                    "name": "Next Actions"
+                  }
+                }
+                ```
+
         Returns:
-            Full JSON record of the created section as a dictionary.
-        
-        Raises:
-            HTTPError: If the API request fails, including invalid project/section data or authentication issues.
-        
+            dict[str, Any]: Successfully created the specified section.
+
         Tags:
-            sections, create, management, api-call, important
+            Sections
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2734,20 +4469,29 @@ class AsanaApp(APIApplication):
 
     def add_task_to_section(self, section_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds a task to a specific section in a project, removing it from other sections. Inserts the task at the top of the section unless position parameters are provided (insert_before/insert_after). Does not work for separator tasks (resource_subtype 'section').
-        
+        Adds a task to the specified section using the POST method.
+
         Args:
-            data: Dictionary containing task data including section ID (keys: 'section' or positional parameters if applicable). Must not include separator tasks.
-            opt_pretty: Enables pretty-printed JSON output for debugging (increases response time and size).
-        
+            section_gid (string): section_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "insert_after": "987654",
+                    "insert_before": "86420",
+                    "task": "123456"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the API response with the updated section/task details.
-        
-        Raises:
-            HTTPError: When the API request fails (network issues, invalid data, or unauthorized access).
-        
+            dict[str, Any]: Successfully added the task.
+
         Tags:
-            task-management, sections, modify, async_job, important
+            Sections
         """
         if section_gid is None:
             raise ValueError("Missing required parameter 'section_gid'")
@@ -2763,20 +4507,29 @@ class AsanaApp(APIApplication):
 
     def move_or_insert_sections(self, project_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Move or insert sections by sending a POST request with provided data and optional 'pretty' formatting.
-        
+        Inserts a new section into a specific project and returns the operation's status.
+
         Args:
-            data: A dictionary containing section data. Either 'before_section' or 'after_section' is required.
-            opt_pretty: A flag to provide formatted output, useful for debugging purposes.
-        
+            project_gid (string): project_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "after_section": "987654",
+                    "before_section": "86420",
+                    "section": "321654"
+                  }
+                }
+                ```
+
         Returns:
-            An empty dictionary representing the response data.
-        
-        Raises:
-            HTTPError: Raised if there's an HTTP error in the request.
-        
+            dict[str, Any]: Successfully moved the specified section.
+
         Tags:
-            move, insert, sections, management, important
+            Sections
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -2792,20 +4545,19 @@ class AsanaApp(APIApplication):
 
     def get_astatus_update(self, status_update_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Get a status update by requesting a complete record from an endpoint. The response may include optional fields based on query parameters.
-        
+        Retrieves a specific status update's details and associated metadata based on the provided status update identifier.
+
         Args:
-            opt_fields: A comma-separated list of optional properties to include in the response. Default is None.
-            opt_pretty: Enables pretty output by formatting the response, such as proper line breaking in JSON. Advisable only for debugging. Default is None.
-        
+            status_update_gid (string): status_update_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'author,author.name,created_at,created_by,created_by.name,hearted,hearts,hearts.user,hearts.user.name,html_text,liked,likes,likes.user,likes.user.name,modified_at,num_hearts,num_likes,parent,parent.name,resource_subtype,status_type,text,title'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the status update record.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the specified object's status updates.
+
         Tags:
-            status, get, management, important
+            Status updates
         """
         if status_update_gid is None:
             raise ValueError("Missing required parameter 'status_update_gid'")
@@ -2817,19 +4569,18 @@ class AsanaApp(APIApplication):
 
     def delete_astatus_update(self, status_update_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific existing status update and returns an empty data record upon success.
-        
+        Deletes a specific status update identified by its GID and returns a response based on the operation's success or failure.
+
         Args:
-            opt_pretty: Provides 'pretty' output formatting for JSON responses. Enables human-readable formatting with line breaks and indentation, recommended for debugging purposes only due to performance overhead.
-        
+            status_update_gid (string): status_update_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Empty dictionary indicating successful deletion, parsed from the response JSON.
-        
-        Raises:
-            HTTPError: If the API request fails (non-2xx status code), raised through response.raise_for_status().
-        
+            dict[str, Any]: Successfully deleted the specified status.
+
         Tags:
-            status-updates, delete, important, http
+            Status updates
         """
         if status_update_gid is None:
             raise ValueError("Missing required parameter 'status_update_gid'")
@@ -2841,24 +4592,25 @@ class AsanaApp(APIApplication):
 
     def get_status_updates_from_an_object(self, parent=None, created_since=None, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Fetches status updates from a specified object, returning compact status records.
-        
+        Retrieves status updates with filtering options for parent, creation date, and other parameters, returning paginated results.
+
         Args:
-            created_since: Only return statuses that have been created since the given time.
-            limit: Results per page. The number of objects to return per page. The value must be between 1 and 100.
-            offset: Offset token. An offset to the next page returned by the API.
-            opt_fields: Optional fields to include. A comma-separated list of properties to include beyond the default compact resource.
-            opt_pretty: Provides 'pretty' output, such as line-breaking and indentation for JSON responses.
-            parent: Globally unique identifier for the object to fetch statuses from. Must be a GID for a project, portfolio, or goal.
-        
+            parent (string): (Required) Globally unique identifier for object to fetch statuses from. Must be a GID for a project, portfolio, or goal. Example: '159874'.
+            created_since (string): Only return statuses that have been created since the given time. Example: '2012-02-22T02:06:58.158Z'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'author,author.name,created_at,created_by,created_by.name,hearted,hearts,hearts.user,hearts.user.name,html_text,liked,likes,likes.user,likes.user.name,modified_at,num_hearts,num_likes,offset,parent,parent.name,path,resource_subtype,status_type,text,title,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing status updates for the given object.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the specified object's status updates.
+
         Tags:
-            status-updates, fetch, management, async_job, important
+            Status updates
         """
         url = f"{self.base_url}/status_updates"
         query_params = {k: v for k, v in [('parent', parent), ('created_since', created_since), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
@@ -2868,23 +4620,39 @@ class AsanaApp(APIApplication):
 
     def create_astatus_update(self, opt_fields=None, opt_pretty=None, limit=None, offset=None, data=None) -> dict[str, Any]:
         """
-        Create a status update on an object and return the full record of the newly created status update.
-        
+        Creates a status update with optional fields, pagination controls, and returns success or error responses based on provided parameters.
+
         Args:
-            data: Dictionary containing status update data to be created.
-            limit: Results per page (between 1-100). Controls the number of objects returned per page.
-            offset: Pagination token for retrieving subsequent pages. Must be a valid token from a previous paginated response.
-            opt_fields: Comma-separated list of optional fields to include in the compact response.
-            opt_pretty: If true, returns formatted JSON output for readability (use only during debugging).
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'author,author.name,created_at,created_by,created_by.name,hearted,hearts,hearts.user,hearts.user.name,html_text,liked,likes,likes.user,likes.user.name,modified_at,num_hearts,num_likes,parent,parent.name,resource_subtype,status_type,text,title'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "gid": "12345",
+                    "html_text": "<body>The project <strong>is</strong> moving forward according to plan...</body>",
+                    "parent": "ut ut",
+                    "resource_subtype": "project_status_update",
+                    "resource_type": "task",
+                    "status_type": "on_hold",
+                    "text": "The project is moving forward according to plan...",
+                    "title": "Status Update - Jun 15"
+                  }
+                }
+                ```
+
         Returns:
-            Full record of the created status update as a dictionary.
-        
-        Raises:
-            HTTPError: Raised for invalid requests, authentication errors, or server issues during API communication.
-        
+            dict[str, Any]: Successfully created a new status update.
+
         Tags:
-            create, status-updates, async, management, important
+            Status updates
         """
         request_body = {
             'data': data,
@@ -2898,20 +4666,19 @@ class AsanaApp(APIApplication):
 
     def get_astory(self, story_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a story's full record, returning all data fields except those excluded by default. Optional parameters allow expanding specific fields and formatting the response.
-        
+        Retrieves a specific story by its globally unique identifier (GID) with optional fields and formatting parameters.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response. By default excludes some resource properties.
-            opt_pretty: Formats response with proper line breaks and indentation for readability. Increases processing time and response size.
-        
+            story_gid (string): story_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'assignee,assignee.name,created_at,created_by,created_by.name,custom_field,custom_field.date_value,custom_field.date_value.date,custom_field.date_value.date_time,custom_field.display_value,custom_field.enabled,custom_field.enum_options,custom_field.enum_options.color,custom_field.enum_options.enabled,custom_field.enum_options.name,custom_field.enum_value,custom_field.enum_value.color,custom_field.enum_value.enabled,custom_field.enum_value.name,custom_field.id_prefix,custom_field.is_formula_field,custom_field.multi_enum_values,custom_field.multi_enum_values.color,custom_field.multi_enum_values.enabled,custom_field.multi_enum_values.name,custom_field.name,custom_field.number_value,custom_field.representation_type,custom_field.resource_subtype,custom_field.text_value,custom_field.type,dependency,dependency.created_by,dependency.name,dependency.resource_subtype,duplicate_of,duplicate_of.created_by,duplicate_of.name,duplicate_of.resource_subtype,duplicated_from,duplicated_from.created_by,duplicated_from.name,duplicated_from.resource_subtype,follower,follower.name,hearted,hearts,hearts.user,hearts.user.name,html_text,is_editable,is_edited,is_pinned,liked,likes,likes.user,likes.user.name,new_approval_status,new_date_value,new_dates,new_dates.due_at,new_dates.due_on,new_dates.start_on,new_enum_value,new_enum_value.color,new_enum_value.enabled,new_enum_value.name,new_multi_enum_values,new_multi_enum_values.color,new_multi_enum_values.enabled,new_multi_enum_values.name,new_name,new_number_value,new_people_value,new_people_value.name,new_resource_subtype,new_section,new_section.name,new_text_value,num_hearts,num_likes,old_approval_status,old_date_value,old_dates,old_dates.due_at,old_dates.due_on,old_dates.start_on,old_enum_value,old_enum_value.color,old_enum_value.enabled,old_enum_value.name,old_multi_enum_values,old_multi_enum_values.color,old_multi_enum_values.enabled,old_multi_enum_values.name,old_name,old_number_value,old_people_value,old_people_value.name,old_resource_subtype,old_section,old_section.name,old_text_value,previews,previews.fallback,previews.footer,previews.header,previews.header_link,previews.html_text,previews.text,previews.title,previews.title_link,project,project.name,resource_subtype,source,sticker_name,story,story.created_at,story.created_by,story.created_by.name,story.resource_subtype,story.text,tag,tag.name,target,target.created_by,target.name,target.resource_subtype,task,task.created_by,task.name,task.resource_subtype,text,type'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            dict[str, Any]: Complete story record with requested optional fields included.
-        
-        Raises:
-            HTTPError: Raised for invalid API requests, authentication failures, or server errors via response.raise_for_status().
-        
+            dict[str, Any]: Successfully retrieved the specified story.
+
         Tags:
-            stories, retrieve, api, get, management, important
+            Stories
         """
         if story_gid is None:
             raise ValueError("Missing required parameter 'story_gid'")
@@ -2923,21 +4690,35 @@ class AsanaApp(APIApplication):
 
     def update_astory(self, story_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates a story and returns the full record of the updated story. Only comment stories can have their text updated, and only comment/attachment stories can be pinned. Exactly one of `text` or `html_text` must be specified when updating a comment story.
-        
+        Updates or creates a story at the specified path "/stories/{story_gid}" using the provided data.
+
         Args:
-            data: Dictionary containing story data to update. Must include required fields for the story type.
-            opt_fields: Comma-separated list of optional properties to include in the response
-            opt_pretty: If true, returns formatted JSON output (increases response size and processing time)
-        
+            story_gid (string): story_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'assignee,assignee.name,created_at,created_by,created_by.name,custom_field,custom_field.date_value,custom_field.date_value.date,custom_field.date_value.date_time,custom_field.display_value,custom_field.enabled,custom_field.enum_options,custom_field.enum_options.color,custom_field.enum_options.enabled,custom_field.enum_options.name,custom_field.enum_value,custom_field.enum_value.color,custom_field.enum_value.enabled,custom_field.enum_value.name,custom_field.id_prefix,custom_field.is_formula_field,custom_field.multi_enum_values,custom_field.multi_enum_values.color,custom_field.multi_enum_values.enabled,custom_field.multi_enum_values.name,custom_field.name,custom_field.number_value,custom_field.representation_type,custom_field.resource_subtype,custom_field.text_value,custom_field.type,dependency,dependency.created_by,dependency.name,dependency.resource_subtype,duplicate_of,duplicate_of.created_by,duplicate_of.name,duplicate_of.resource_subtype,duplicated_from,duplicated_from.created_by,duplicated_from.name,duplicated_from.resource_subtype,follower,follower.name,hearted,hearts,hearts.user,hearts.user.name,html_text,is_editable,is_edited,is_pinned,liked,likes,likes.user,likes.user.name,new_approval_status,new_date_value,new_dates,new_dates.due_at,new_dates.due_on,new_dates.start_on,new_enum_value,new_enum_value.color,new_enum_value.enabled,new_enum_value.name,new_multi_enum_values,new_multi_enum_values.color,new_multi_enum_values.enabled,new_multi_enum_values.name,new_name,new_number_value,new_people_value,new_people_value.name,new_resource_subtype,new_section,new_section.name,new_text_value,num_hearts,num_likes,old_approval_status,old_date_value,old_dates,old_dates.due_at,old_dates.due_on,old_dates.start_on,old_enum_value,old_enum_value.color,old_enum_value.enabled,old_enum_value.name,old_multi_enum_values,old_multi_enum_values.color,old_multi_enum_values.enabled,old_multi_enum_values.name,old_name,old_number_value,old_people_value,old_people_value.name,old_resource_subtype,old_section,old_section.name,old_text_value,previews,previews.fallback,previews.footer,previews.header,previews.header_link,previews.html_text,previews.text,previews.title,previews.title_link,project,project.name,resource_subtype,source,sticker_name,story,story.created_at,story.created_by,story.created_by.name,story.resource_subtype,story.text,tag,tag.name,target,target.created_by,target.name,target.resource_subtype,task,task.created_by,task.name,task.resource_subtype,text,type'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "gid": "12345",
+                    "html_text": "<body>This is a comment.</body>",
+                    "is_pinned": false,
+                    "resource_subtype": "comment_added",
+                    "resource_type": "task",
+                    "sticker_name": "dancing_unicorn",
+                    "text": "This is a comment."
+                  }
+                }
+                ```
+
         Returns:
-            Full updated story record as a dictionary containing all data fields
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid data, permissions, or server errors
-        
+            dict[str, Any]: Successfully retrieved the specified story.
+
         Tags:
-            update, stories, async_job, management, important
+            Stories
         """
         if story_gid is None:
             raise ValueError("Missing required parameter 'story_gid'")
@@ -2953,19 +4734,18 @@ class AsanaApp(APIApplication):
 
     def delete_astory(self, story_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a story created by the user.
-        
+        Deletes a specific story identified by its story GID from the collection of stories.
+
         Args:
-            opt_pretty: Optional parameter to provide the response in a pretty format. Useful for debugging.
-        
+            story_gid (string): story_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            An empty dictionary as a result of the deletion operation.
-        
-        Raises:
-            HTTPError: Raised when the HTTP request fails, indicating an unsuccessful deletion.
-        
+            dict[str, Any]: Successfully deleted the specified story.
+
         Tags:
-            delete, story, management, important
+            Stories
         """
         if story_gid is None:
             raise ValueError("Missing required parameter 'story_gid'")
@@ -2977,22 +4757,24 @@ class AsanaApp(APIApplication):
 
     def get_stories_from_atask(self, task_gid, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve paginated stories associated with a task, returning compact records in a dictionary format.
-        
+        Retrieves the stories associated with a specific task using the task's unique identifier and supports optional query parameters for pagination and field selection.
+
         Args:
-            limit: Results per page (1-100). Controls the number of stories returned per API call.
-            offset: Pagination token from prior API response. Omit to get first page of results.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Format response for readability (increases processing time).
-        
+            task_gid (string): task_gid
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'assignee,assignee.name,created_at,created_by,created_by.name,custom_field,custom_field.date_value,custom_field.date_value.date,custom_field.date_value.date_time,custom_field.display_value,custom_field.enabled,custom_field.enum_options,custom_field.enum_options.color,custom_field.enum_options.enabled,custom_field.enum_options.name,custom_field.enum_value,custom_field.enum_value.color,custom_field.enum_value.enabled,custom_field.enum_value.name,custom_field.id_prefix,custom_field.is_formula_field,custom_field.multi_enum_values,custom_field.multi_enum_values.color,custom_field.multi_enum_values.enabled,custom_field.multi_enum_values.name,custom_field.name,custom_field.number_value,custom_field.representation_type,custom_field.resource_subtype,custom_field.text_value,custom_field.type,dependency,dependency.created_by,dependency.name,dependency.resource_subtype,duplicate_of,duplicate_of.created_by,duplicate_of.name,duplicate_of.resource_subtype,duplicated_from,duplicated_from.created_by,duplicated_from.name,duplicated_from.resource_subtype,follower,follower.name,hearted,hearts,hearts.user,hearts.user.name,html_text,is_editable,is_edited,is_pinned,liked,likes,likes.user,likes.user.name,new_approval_status,new_date_value,new_dates,new_dates.due_at,new_dates.due_on,new_dates.start_on,new_enum_value,new_enum_value.color,new_enum_value.enabled,new_enum_value.name,new_multi_enum_values,new_multi_enum_values.color,new_multi_enum_values.enabled,new_multi_enum_values.name,new_name,new_number_value,new_people_value,new_people_value.name,new_resource_subtype,new_section,new_section.name,new_text_value,num_hearts,num_likes,offset,old_approval_status,old_date_value,old_dates,old_dates.due_at,old_dates.due_on,old_dates.start_on,old_enum_value,old_enum_value.color,old_enum_value.enabled,old_enum_value.name,old_multi_enum_values,old_multi_enum_values.color,old_multi_enum_values.enabled,old_multi_enum_values.name,old_name,old_number_value,old_people_value,old_people_value.name,old_resource_subtype,old_section,old_section.name,old_text_value,path,previews,previews.fallback,previews.footer,previews.header,previews.header_link,previews.html_text,previews.text,previews.title,previews.title_link,project,project.name,resource_subtype,source,sticker_name,story,story.created_at,story.created_by,story.created_by.name,story.resource_subtype,story.text,tag,tag.name,target,target.created_by,target.name,target.resource_subtype,task,task.created_by,task.name,task.resource_subtype,text,type,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the API response with story data, typically including 'data' and 'next_page' fields.
-        
-        Raises:
-            HTTPError: When API request fails due to network issues, invalid parameters, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the specified task's stories.
+
         Tags:
-            stories, pagination, api, retrieve, async_job, important
+            Stories
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3004,21 +4786,35 @@ class AsanaApp(APIApplication):
 
     def create_astory_on_atask(self, task_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a comment story on a task as the authenticated user, returning the new story's full record.
-        
+        Creates a story for a specific task using the "POST" method at the "/tasks/{task_gid}/stories" endpoint, allowing for optional fields and formatting through query parameters.
+
         Args:
-            data: Dictionary containing story data (currently only supports comment stories)
-            opt_fields: Comma-separated list of optional fields to include in response
-            opt_pretty: Enable formatted JSON output (use for debugging only)
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'assignee,assignee.name,created_at,created_by,created_by.name,custom_field,custom_field.date_value,custom_field.date_value.date,custom_field.date_value.date_time,custom_field.display_value,custom_field.enabled,custom_field.enum_options,custom_field.enum_options.color,custom_field.enum_options.enabled,custom_field.enum_options.name,custom_field.enum_value,custom_field.enum_value.color,custom_field.enum_value.enabled,custom_field.enum_value.name,custom_field.id_prefix,custom_field.is_formula_field,custom_field.multi_enum_values,custom_field.multi_enum_values.color,custom_field.multi_enum_values.enabled,custom_field.multi_enum_values.name,custom_field.name,custom_field.number_value,custom_field.representation_type,custom_field.resource_subtype,custom_field.text_value,custom_field.type,dependency,dependency.created_by,dependency.name,dependency.resource_subtype,duplicate_of,duplicate_of.created_by,duplicate_of.name,duplicate_of.resource_subtype,duplicated_from,duplicated_from.created_by,duplicated_from.name,duplicated_from.resource_subtype,follower,follower.name,hearted,hearts,hearts.user,hearts.user.name,html_text,is_editable,is_edited,is_pinned,liked,likes,likes.user,likes.user.name,new_approval_status,new_date_value,new_dates,new_dates.due_at,new_dates.due_on,new_dates.start_on,new_enum_value,new_enum_value.color,new_enum_value.enabled,new_enum_value.name,new_multi_enum_values,new_multi_enum_values.color,new_multi_enum_values.enabled,new_multi_enum_values.name,new_name,new_number_value,new_people_value,new_people_value.name,new_resource_subtype,new_section,new_section.name,new_text_value,num_hearts,num_likes,old_approval_status,old_date_value,old_dates,old_dates.due_at,old_dates.due_on,old_dates.start_on,old_enum_value,old_enum_value.color,old_enum_value.enabled,old_enum_value.name,old_multi_enum_values,old_multi_enum_values.color,old_multi_enum_values.enabled,old_multi_enum_values.name,old_name,old_number_value,old_people_value,old_people_value.name,old_resource_subtype,old_section,old_section.name,old_text_value,previews,previews.fallback,previews.footer,previews.header,previews.header_link,previews.html_text,previews.text,previews.title,previews.title_link,project,project.name,resource_subtype,source,sticker_name,story,story.created_at,story.created_by,story.created_by.name,story.resource_subtype,story.text,tag,tag.name,target,target.created_by,target.name,target.resource_subtype,task,task.created_by,task.name,task.resource_subtype,text,type'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "gid": "12345",
+                    "html_text": "<body>This is a comment.</body>",
+                    "is_pinned": false,
+                    "resource_subtype": "comment_added",
+                    "resource_type": "task",
+                    "sticker_name": "dancing_unicorn",
+                    "text": "This is a comment."
+                  }
+                }
+                ```
+
         Returns:
-            dict[str, Any]: Complete record of the newly created story including all requested fields
-        
-        Raises:
-            requests.HTTPError: Raised for invalid requests or server errors (4xx/5xx status codes)
-        
+            dict[str, Any]: Successfully created a new story.
+
         Tags:
-            stories, create, comment, tasks, management, important
+            Stories
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3034,23 +4830,24 @@ class AsanaApp(APIApplication):
 
     def get_multiple_tags(self, limit=None, offset=None, workspace=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve multiple tags with optional pagination and filtering. Returns compact tag records based on provided query parameters.
-        
+        Retrieves a list of tags using the "GET" method at the "/tags" endpoint, allowing customization with parameters for limit, offset, workspace, optional fields, and pretty formatting.
+
         Args:
-            limit: Results per page (1-100). Controls the number of objects returned per page.
-            offset: Offset token for pagination. Use the token returned by previous paginated responses to fetch subsequent pages.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Provides formatted output for readability at the cost of performance.
-            workspace: The workspace identifier to filter tags.
-        
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            workspace (string): The workspace to filter tags on. Example: '1331'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,followers,followers.name,name,notes,offset,path,permalink_url,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing paginated tag records as key-value pairs. Includes metadata and tag data.
-        
-        Raises:
-            HTTPError: When the API request fails due to network issues or invalid parameters.
-        
+            dict[str, Any]: Successfully retrieved the specified set of tags.
+
         Tags:
-            retrieve, pagination, filter, tags, workspace, management, important
+            Tags
         """
         url = f"{self.base_url}/tags"
         query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('workspace', workspace), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -3060,21 +4857,36 @@ class AsanaApp(APIApplication):
 
     def create_atag(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Create a new tag in a specific workspace or organization.
-        
+        Creates a new tag entry with optional fields and formatted response.
+
         Args:
-            data: Dictionary containing the data for the new tag. Must be provided to create a tag.
-            opt_fields: Optional fields to include in the response. Specify as a comma-separated list.
-            opt_pretty: Flag to return the response in a 'pretty' format. Useful for debugging.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,followers,followers.name,name,notes,permalink_url,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "color": "light-green",
+                    "followers": [
+                      "12345",
+                      "42563"
+                    ],
+                    "gid": "12345",
+                    "name": "Stuff to buy",
+                    "notes": "Mittens really likes the stuff from Humboldt.",
+                    "resource_type": "task",
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            The full record of the newly created tag.
-        
-        Raises:
-            requests.RequestException: Raised if there is an error with the HTTP request.
-        
+            dict[str, Any]: Successfully created the newly specified tag.
+
         Tags:
-            create, tag, important, management
+            Tags
         """
         request_body = {
             'data': data,
@@ -3088,20 +4900,19 @@ class AsanaApp(APIApplication):
 
     def get_atag(self, tag_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve a single tag with optional properties and formatted output.
-        
+        Retrieves information about a specific tag, identified by its GID, using the "GET" method at the path "/tags/{tag_gid}" with optional formatting and field selection.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response (excluded by default).
-            opt_pretty: Enable formatted output (increases response size, recommended for debugging only).
-        
+            tag_gid (string): tag_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,followers,followers.name,name,notes,permalink_url,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Complete tag record as a dictionary containing all requested fields.
-        
-        Raises:
-            requests.HTTPError: Raised for non-2xx HTTP status codes from the API.
-        
+            dict[str, Any]: Successfully retrieved the specified tag.
+
         Tags:
-            tag, get, retrieve, api, important
+            Tags
         """
         if tag_gid is None:
             raise ValueError("Missing required parameter 'tag_gid'")
@@ -3113,21 +4924,19 @@ class AsanaApp(APIApplication):
 
     def update_atag(self, tag_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Updates a tag's properties by sending a PUT request with specified optional fields. Only provided fields are modified; unspecified fields remain unchanged.
-        
+        Updates or replaces a Git tag with the specified GID and returns the operation status.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response. Excludes certain properties by default.
-            opt_pretty: Enables formatted output for readability (increases response size and processing time). Recommended for debugging only.
-        
+            tag_gid (string): tag_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,followers,followers.name,name,notes,permalink_url,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            dict[str, Any]: Complete updated tag record containing all fields after modification.
-        
-        Raises:
-            requests.HTTPError: Raised for invalid requests, authorization failures, or server errors (4XX/5XX status codes).
-            ValueError: Raised if provided `opt_fields` or `opt_pretty` values are invalid.
-        
+            dict[str, Any]: Successfully updated the specified tag.
+
         Tags:
-            update, tag, management, async_job, important
+            Tags
         """
         if tag_gid is None:
             raise ValueError("Missing required parameter 'tag_gid'")
@@ -3139,19 +4948,18 @@ class AsanaApp(APIApplication):
 
     def delete_atag(self, tag_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific, existing tag by making a DELETE request to the tag's URL.
-        
+        Deletes a specific tag from a repository using the API and returns relevant status messages, depending on the outcome of the deletion operation.
+
         Args:
-            opt_pretty: Provides the response in a 'pretty' format, useful for debugging purposes.
-        
+            tag_gid (string): tag_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            An empty data record returned as a JSON response.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully deleted the specified tag.
+
         Tags:
-            delete, tag-management, important
+            Tags
         """
         if tag_gid is None:
             raise ValueError("Missing required parameter 'tag_gid'")
@@ -3163,22 +4971,24 @@ class AsanaApp(APIApplication):
 
     def get_atask_stags(self, task_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Fetches a task's tags, returning a compact representation of all associated tags.
-        
+        Retrieves the tags associated with a specific task using the task's unique identifier and supports optional filtering/pagination through query parameters.
+
         Args:
-            limit: Results per page. The number of objects to return per page. The value must be between 1 and 100.
-            offset: Offset token. An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request.
-            opt_fields: Optional fields to include in the response. A comma-separated list of properties to include.
-            opt_pretty: Provides "pretty" output. Returns the response in a formatted JSON with proper line breaking and indentation.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,followers,followers.name,name,notes,offset,path,permalink_url,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing the task's tags.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the tags for the given task.
+
         Tags:
-            fetch, tags, pagination, api, important
+            Tags
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3190,22 +5000,24 @@ class AsanaApp(APIApplication):
 
     def get_tags_in_aworkspace(self, workspace_gid, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve paginated tags from a workspace with optional filters and response formatting.
-        
+        Retrieves a list of tags associated with a specific workspace, with options to limit the response size and customize the output fields.
+
         Args:
-            limit: Results per page. The number of objects to return, between 1-100.
-            offset: Offset token for pagination. Use the token from prior paginated responses.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Enable formatted JSON output (increases response time and size).
-        
+            workspace_gid (string): workspace_gid
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,followers,followers.name,name,notes,offset,path,permalink_url,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing compact tag records and pagination details.
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails (e.g., invalid parameters or authentication errors).
-        
+            dict[str, Any]: Successfully retrieved the specified set of tags.
+
         Tags:
-            retrieve, paginated, workspace-tags, management, important
+            Tags
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -3217,21 +5029,36 @@ class AsanaApp(APIApplication):
 
     def create_atag_in_aworkspace(self, workspace_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new tag in a workspace or organization and returns its full record.
-        
+        Adds tags to a specified workspace using a POST request to the "/workspaces/{workspace_gid}/tags" endpoint.
+
         Args:
-            data: Dictionary containing tag creation parameters (required fields depend on the API specification).
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Enables formatted output for improved readability during debugging.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'color,created_at,followers,followers.name,name,notes,permalink_url,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "color": "light-green",
+                    "followers": [
+                      "12345",
+                      "42563"
+                    ],
+                    "gid": "12345",
+                    "name": "Stuff to buy",
+                    "notes": "Mittens really likes the stuff from Humboldt.",
+                    "resource_type": "task"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the full record of the created tag.
-        
-        Raises:
-            HTTPError: Raised for HTTP request failures (4XX/5XX status codes).
-        
+            dict[str, Any]: Successfully created the newly specified tag.
+
         Tags:
-            create, management, tags, async-job, important
+            Tags
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -3247,28 +5074,36 @@ class AsanaApp(APIApplication):
 
     def get_multiple_tasks(self, limit=None, offset=None, assignee=None, project=None, section=None, workspace=None, completed_since=None, modified_since=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve multiple task records filtered by parameters such as assignee, project, or workspace.
-        
+        Retrieves a list of tasks based on specified query parameters such as assignee, project, and completion status, using the GET method at the "/tasks" endpoint.
+
         Args:
-            assignee: The assignee to filter tasks on. Set to `any` with `null` value to search for unassigned tasks. Requires `workspace` to be specified.
-            completed_since: Only return tasks that are incomplete or have been completed since this time.
-            limit: Number of results per page (between 1 and 100).
-            modified_since: Only return tasks modified since this time.
-            offset: Offset token for pagination. Must be from a previous request.
-            opt_fields: Optional fields to include in the response (comma-separated list).
-            opt_pretty: Provide 'pretty' output for better readability.
-            project: The project to filter tasks on.
-            section: The section to filter tasks on.
-            workspace: The workspace to filter tasks on. Requires `assignee` to be specified.
-        
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            assignee (string): The assignee to filter tasks on. If searching for unassigned tasks, assignee.any = null can be specified.
+        *Note: If you specify `assignee`, you must also specify the `workspace` to filter on.* Example: '14641'.
+            project (string): The project to filter tasks on. Example: '321654'.
+            section (string): The section to filter tasks on. Example: '321654'.
+            workspace (string): The workspace to filter tasks on.
+        *Note: If you specify `workspace`, you must also specify the `assignee` to filter on.* Example: '321654'.
+            completed_since (string): Only return tasks that are either incomplete or that have been completed since this time. Example: '2012-02-22T02:06:58.158Z'.
+            modified_since (string): Only return tasks that have been modified since the given time. *Note: A task is considered “modified” if any of its properties
+        change, or associations between it and other objects are modified
+        (e.g. a task being added to a project). A task is not considered
+        modified just because another object it is associated with (e.g. a
+        subtask) is modified. Actions that count as modifying the task
+        include assigning, renaming, completing, and adding stories.* Example: '2012-02-22T02:06:58.158Z'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing compact task records for the filtered set of tasks.
-        
-        Raises:
-            requests.RequestException: Raised if there is an issue with the HTTP request. It may occur due to network issues or invalid response from the server.
-        
+            dict[str, Any]: Successfully retrieved requested tasks.
+
         Tags:
-            tasks, list, filter, important
+            Tasks
         """
         url = f"{self.base_url}/tasks"
         query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('assignee', assignee), ('project', project), ('section', section), ('workspace', workspace), ('completed_since', completed_since), ('modified_since', modified_since), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -3278,21 +5113,161 @@ class AsanaApp(APIApplication):
 
     def create_atask(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new task in a workspace, either explicitly specified or inferred from projects/parent task associations.
-        
+        Creates a new task using the API and returns a status message, allowing optional fields and pretty-printing configurations through query parameters.
+
         Args:
-            data: Dictionary containing task data fields to set (unspecified fields use defaults). Required workspace may be inferred from projects/parent.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Enables human-readable formatting for JSON responses (increases response size).
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,parent,parent.created_by,parent.name,parent.resource_subtype,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "actual_time_minutes": 200,
+                    "approval_status": "pending",
+                    "assignee": "12345",
+                    "assignee_section": "12345",
+                    "assignee_status": "upcoming",
+                    "completed": false,
+                    "completed_at": "2012-02-22T02:06:58.147Z",
+                    "completed_by": {
+                      "gid": "12345",
+                      "name": "Greg Sanchez",
+                      "resource_type": "task"
+                    },
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "created_by": {
+                      "gid": "1111",
+                      "resource_type": "user"
+                    },
+                    "custom_fields": {
+                      "4578152156": "Not Started",
+                      "5678904321": "On Hold"
+                    },
+                    "dependencies": [
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "dependents": [
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "due_at": "2019-09-15T02:06:58.147Z",
+                    "due_on": "2019-09-15",
+                    "external": {
+                      "data": "A blob of information",
+                      "gid": "my_gid"
+                    },
+                    "followers": [
+                      "12345"
+                    ],
+                    "gid": "12345",
+                    "hearted": true,
+                    "hearts": [
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "html_notes": "<body>Mittens <em>really</em> likes the stuff from Humboldt.</body>",
+                    "is_rendered_as_separator": false,
+                    "liked": true,
+                    "likes": [
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "memberships": [
+                      {
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "section": {
+                          "gid": "12345",
+                          "name": "Next Actions",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "section": {
+                          "gid": "12345",
+                          "name": "Next Actions",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "modified_at": "2012-02-22T02:06:58.147Z",
+                    "name": "Bug Task",
+                    "notes": "Mittens really likes the stuff from Humboldt.",
+                    "num_hearts": 5,
+                    "num_likes": 5,
+                    "num_subtasks": 3,
+                    "parent": "12345",
+                    "projects": [
+                      "12345"
+                    ],
+                    "resource_subtype": "default_task",
+                    "resource_type": "task",
+                    "start_at": "2019-09-14T02:06:58.147Z",
+                    "start_on": "2019-09-14",
+                    "tags": [
+                      "12345"
+                    ],
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the created task details, including server-generated fields like ID and timestamps.
-        
-        Raises:
-            HTTPError: When the POST request fails due to invalid data, permissions, or server errors.
-        
+            dict[str, Any]: Successfully created a new task.
+
         Tags:
-            create, task, async-job, management, important
+            Tasks
         """
         request_body = {
             'data': data,
@@ -3306,20 +5281,19 @@ class AsanaApp(APIApplication):
 
     def get_atask(self, task_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve complete task record for a single task, including optional fields and formatted output.
-        
+        Retrieves task details using the Asana API and returns information about the specified task, with optional fields and formatting available through query parameters.
+
         Args:
-            opt_fields: Comma-separated property list to include optional fields (excluded by default in compact responses)
-            opt_pretty: Enable human-readable formatting (increases response size and processing time)
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,parent,parent.created_by,parent.name,parent.resource_subtype,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the complete task record with requested fields
-        
-        Raises:
-            requests.HTTPError: If API request fails (e.g., invalid task ID or server error)
-        
+            dict[str, Any]: Successfully retrieved the specified task.
+
         Tags:
-            retrieve, tasks, api, get, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3331,21 +5305,162 @@ class AsanaApp(APIApplication):
 
     def update_atask(self, task_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates a specific, existing task by making a PUT request. Only the fields provided in the `data` block are updated.
-        
+        Updates an existing task specified by its ID using the PUT method, allowing for a complete replacement of the task resource.
+
         Args:
-            data: Dictionary containing the fields to be updated in the task. Only the specified fields are modified.
-            opt_fields: Optional query parameter to include additional properties in the response.
-            opt_pretty: Optional query parameter to format the JSON response for readability.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,parent,parent.created_by,parent.name,parent.resource_subtype,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "actual_time_minutes": 200,
+                    "approval_status": "pending",
+                    "assignee": "12345",
+                    "assignee_section": "12345",
+                    "assignee_status": "upcoming",
+                    "completed": false,
+                    "completed_at": "2012-02-22T02:06:58.147Z",
+                    "completed_by": {
+                      "gid": "12345",
+                      "name": "Greg Sanchez",
+                      "resource_type": "task"
+                    },
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "created_by": {
+                      "gid": "1111",
+                      "resource_type": "user"
+                    },
+                    "custom_fields": {
+                      "4578152156": "Not Started",
+                      "5678904321": "On Hold"
+                    },
+                    "dependencies": [
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "dependents": [
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "due_at": "2019-09-15T02:06:58.147Z",
+                    "due_on": "2019-09-15",
+                    "external": {
+                      "data": "A blob of information",
+                      "gid": "my_gid"
+                    },
+                    "followers": [
+                      "12345"
+                    ],
+                    "gid": "12345",
+                    "hearted": true,
+                    "hearts": [
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "html_notes": "<body>Mittens <em>really</em> likes the stuff from Humboldt.</body>",
+                    "is_rendered_as_separator": false,
+                    "liked": true,
+                    "likes": [
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "memberships": [
+                      {
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "section": {
+                          "gid": "12345",
+                          "name": "Next Actions",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "section": {
+                          "gid": "12345",
+                          "name": "Next Actions",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "modified_at": "2012-02-22T02:06:58.147Z",
+                    "name": "Bug Task",
+                    "notes": "Mittens really likes the stuff from Humboldt.",
+                    "num_hearts": 5,
+                    "num_likes": 5,
+                    "num_subtasks": 3,
+                    "parent": "12345",
+                    "projects": [
+                      "12345"
+                    ],
+                    "resource_subtype": "default_task",
+                    "resource_type": "task",
+                    "start_at": "2019-09-14T02:06:58.147Z",
+                    "start_on": "2019-09-14",
+                    "tags": [
+                      "12345"
+                    ],
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            The complete updated task record as a dictionary.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully updated the specified task.
+
         Tags:
-            update, task, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3361,19 +5476,18 @@ class AsanaApp(APIApplication):
 
     def delete_atask(self, task_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific task permanently after moving it to the user's trash (recoverable for 30 days). Returns an empty data record upon success.
-        
+        Deletes the specified task identified by the task_gid and returns an appropriate HTTP status code.
+
         Args:
-            opt_pretty: Controls formatted response output (JSON pretty-printing). Use only during debugging due to performance impact.
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Empty dictionary representing a successful deletion, as the task will reside in trash until permanent removal.
-        
-        Raises:
-            HTTPError: Raised for API request failures (e.g., task doesn't exist, authentication errors, or server issues).
-        
+            dict[str, Any]: Successfully deleted the specified task.
+
         Tags:
-            delete, tasks, async_job, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3385,21 +5499,29 @@ class AsanaApp(APIApplication):
 
     def duplicate_atask(self, task_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Duplicates a task by creating and returning a job that asynchronously handles the duplication.
-        
+        Duplicates a task using the Asana API and returns a job ID, requiring a subsequent update call to modify the new task's properties.
+
         Args:
-            data: The data required for duplicating the task. It should be a dictionary of string keys to any type values.
-            opt_fields: Optional fields to include in the response. Specify as a comma-separated list of properties.
-            opt_pretty: Set to True for a pretty output format. This is useful during debugging and may increase response time and size.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'new_project,new_project.name,new_project_template,new_project_template.name,new_task,new_task.created_by,new_task.name,new_task.resource_subtype,new_task_template,new_task_template.name,resource_subtype,status'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "include": "n,n,n",
+                    "name": "New Task Name"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing information about the job created for duplicating the task.
-        
-        Raises:
-            requests.HTTPError: If the HTTP request fails due to a server error or an unexpected status code.
-        
+            dict[str, Any]: Successfully created the job to handle duplication.
+
         Tags:
-            duplicate, async_job, task-management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3415,23 +5537,25 @@ class AsanaApp(APIApplication):
 
     def get_tasks_from_aproject(self, project_gid, opt_fields=None, completed_since=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Get tasks from a project, returning compact task records ordered by their priority within the project.
-        
+        Retrieves a list of tasks associated with a specific project, supporting optional filtering and pagination parameters.
+
         Args:
-            completed_since: Only return tasks that are either incomplete or have been completed since this time. Accepts a date-time string or the keyword 'now'.
-            limit: The number of objects to return per page. Must be between 1 and 100.
-            offset: Offset token for pagination. An offset returned by a previous paginated request.
-            opt_fields: A comma-separated list of properties to include beyond the default compact resource.
-            opt_pretty: Provides response in a 'pretty' format, with proper line breaking and indentation.
-        
+            project_gid (string): project_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,uri,workspace,workspace.name'.
+            completed_since (string): Only return tasks that are either incomplete or that have been completed since this time. Accepts a date-time string or the keyword *now*. Example: '2012-02-22T02:06:58.158Z'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary with task records for the project.
-        
-        Raises:
-            HTTPError: Raised if there is an issue with the HTTP request or response (e.g., unauthorized access or server errors).
-        
+            dict[str, Any]: Successfully retrieved the requested project's tasks.
+
         Tags:
-            get, tasks, project, api, async, important
+            Tasks
         """
         if project_gid is None:
             raise ValueError("Missing required parameter 'project_gid'")
@@ -3443,23 +5567,25 @@ class AsanaApp(APIApplication):
 
     def get_tasks_from_asection(self, section_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None, completed_since=None) -> dict[str, Any]:
         """
-        Retrieves tasks from a specified section, primarily designed for board views. Filters can include completion status, pagination limits, and optional field requests.
-        
+        Retrieves a list of tasks within a specified section using the Asana API and returns the data based on optional query parameters such as fields, formatting, limit, offset, and completion status.
+
         Args:
-            completed_since: Restricts results to incomplete tasks or those completed after this time. Accepts a datetime string or 'now'.
-            limit: Maximum number of tasks per page (1-100). Defaults to API's initial page settings if unspecified.
-            offset: Pagination token from prior API responses. Omit to start at the first page.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Enables formatted JSON output for readability. Recommended for debugging due to performance impact.
-        
+            section_gid (string): section_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            completed_since (string): Only return tasks that are either incomplete or that have been completed since this time. Accepts a date-time string or the keyword *now*. Example: '2012-02-22T02:06:58.158Z'.
+
         Returns:
-            Dictionary containing task records in compact format and pagination details.
-        
-        Raises:
-            requests.HTTPError: Raised for invalid parameters, authentication failures, or server errors (e.g., 4xx/5xx status codes).
-        
+            dict[str, Any]: Successfully retrieved the section's tasks.
+
         Tags:
-            tasks, board-view, pagination, async-job, important
+            Tasks
         """
         if section_gid is None:
             raise ValueError("Missing required parameter 'section_gid'")
@@ -3471,22 +5597,24 @@ class AsanaApp(APIApplication):
 
     def get_tasks_from_atag(self, tag_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve paginated tasks associated with a specific tag. Returns compact task records with optional field inclusion and formatted output.
-        
+        Retrieves a list of tasks associated with a specific tag, allowing for optional filtering by fields, formatting, and pagination using query parameters.
+
         Args:
-            limit: Results per page (1-100). Determines the number of tasks returned per request.
-            offset: Offset token for pagination. Use the token returned by previous API responses to fetch subsequent pages.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Enable pretty-printed JSON output for improved readability (increases response size).
-        
+            tag_gid (string): tag_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing paginated task records and API metadata in JSON format.
-        
-        Raises:
-            HTTPError: Raised when the API request fails due to client or server errors (e.g., invalid parameters, authentication issues).
-        
+            dict[str, Any]: Successfully retrieved the tasks associated with the specified tag.
+
         Tags:
-            tasks, pagination, async, management, important
+            Tasks
         """
         if tag_gid is None:
             raise ValueError("Missing required parameter 'tag_gid'")
@@ -3498,23 +5626,25 @@ class AsanaApp(APIApplication):
 
     def get_tasks_from_auser_task_list(self, user_task_list_gid, opt_fields=None, completed_since=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieves tasks from a user's My Tasks list, returning a compact list of tasks with optional filtering and pagination.
-        
+        Retrieves a list of tasks associated with a specific user task list, allowing optional filtering by completion status, custom fields, and pagination limits.
+
         Args:
-            completed_since: Filters tasks to incomplete or those completed after this time. Accepts a date-time string or 'now'.
-            limit: Number of tasks per page (1-100). Controls pagination batch size.
-            offset: Pagination token for accessing subsequent result pages from a prior response.
-            opt_fields: Comma-separated list of optional fields to include in the compact response.
-            opt_pretty: Formats JSON output with indentation for human readability (debugging use only).
-        
+            user_task_list_gid (string): user_task_list_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,uri,workspace,workspace.name'.
+            completed_since (string): Only return tasks that are either incomplete or that have been completed since this time. Accepts a date-time string or the keyword *now*. Example: '2012-02-22T02:06:58.158Z'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing the JSON response with tasks and pagination metadata.
-        
-        Raises:
-            HTTPError: Raised when the API request fails due to network issues, invalid parameters, or authentication errors.
-        
+            dict[str, Any]: Successfully retrieved the user task list's tasks.
+
         Tags:
-            tasks, list, retrieve, pagination, management, important
+            Tasks
         """
         if user_task_list_gid is None:
             raise ValueError("Missing required parameter 'user_task_list_gid'")
@@ -3526,22 +5656,24 @@ class AsanaApp(APIApplication):
 
     def get_subtasks_from_atask(self, task_gid, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve subtasks from a task, returning a compact representation of all task subtasks.
-        
+        Retrieves a list of subtasks for a specified task using the GET method, allowing optional parameters for customizing the response.
+
         Args:
-            limit: Results per page. The number of objects to return per page. The value must be between 1 and 100.
-            offset: Offset token. An offset to the next page returned by the API. Used for pagination.
-            opt_fields: Optional fields to include. Comma-separated list of properties to include beyond the default compact resource.
-            opt_pretty: Provides 'pretty' output. Formats response in a human-readable format, primarily for debugging.
-        
+            task_gid (string): task_gid
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing a compact representation of all subtasks.
-        
-        Raises:
-            requests.HTTPError: Raised when an HTTP request error occurs, such as a bad status code.
-        
+            dict[str, Any]: Successfully retrieved the specified task's subtasks.
+
         Tags:
-            tasks, management, pagination, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3553,18 +5685,162 @@ class AsanaApp(APIApplication):
 
     def create_asubtask(self, task_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a new subtask and adds it to the parent task, returning the full record for the newly created subtask.
-        
+        Creates a new subtask for the specified parent task and returns the created subtask details.
+
         Args:
-            data: A dictionary containing the data for the new subtask.
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: Providing 'pretty' output in formats like JSON, useful for debugging.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,parent,parent.created_by,parent.name,parent.resource_subtype,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "actual_time_minutes": 200,
+                    "approval_status": "pending",
+                    "assignee": "12345",
+                    "assignee_section": "12345",
+                    "assignee_status": "upcoming",
+                    "completed": false,
+                    "completed_at": "2012-02-22T02:06:58.147Z",
+                    "completed_by": {
+                      "gid": "12345",
+                      "name": "Greg Sanchez",
+                      "resource_type": "task"
+                    },
+                    "created_at": "2012-02-22T02:06:58.147Z",
+                    "created_by": {
+                      "gid": "1111",
+                      "resource_type": "user"
+                    },
+                    "custom_fields": {
+                      "4578152156": "Not Started",
+                      "5678904321": "On Hold"
+                    },
+                    "dependencies": [
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "dependents": [
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      },
+                      {
+                        "gid": "12345",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "due_at": "2019-09-15T02:06:58.147Z",
+                    "due_on": "2019-09-15",
+                    "external": {
+                      "data": "A blob of information",
+                      "gid": "my_gid"
+                    },
+                    "followers": [
+                      "12345"
+                    ],
+                    "gid": "12345",
+                    "hearted": true,
+                    "hearts": [
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "html_notes": "<body>Mittens <em>really</em> likes the stuff from Humboldt.</body>",
+                    "is_rendered_as_separator": false,
+                    "liked": true,
+                    "likes": [
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "gid": "12345",
+                        "user": {
+                          "gid": "12345",
+                          "name": "Greg Sanchez",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "memberships": [
+                      {
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "section": {
+                          "gid": "12345",
+                          "name": "Next Actions",
+                          "resource_type": "task"
+                        }
+                      },
+                      {
+                        "project": {
+                          "gid": "12345",
+                          "name": "Stuff to buy",
+                          "resource_type": "task"
+                        },
+                        "section": {
+                          "gid": "12345",
+                          "name": "Next Actions",
+                          "resource_type": "task"
+                        }
+                      }
+                    ],
+                    "modified_at": "2012-02-22T02:06:58.147Z",
+                    "name": "Bug Task",
+                    "notes": "Mittens really likes the stuff from Humboldt.",
+                    "num_hearts": 5,
+                    "num_likes": 5,
+                    "num_subtasks": 3,
+                    "parent": "12345",
+                    "projects": [
+                      "12345"
+                    ],
+                    "resource_subtype": "default_task",
+                    "resource_type": "task",
+                    "start_at": "2019-09-14T02:06:58.147Z",
+                    "start_on": "2019-09-14",
+                    "tags": [
+                      "12345"
+                    ],
+                    "workspace": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing the full record for the newly created subtask.
-        
+            dict[str, Any]: Successfully created the specified subtask.
+
         Tags:
-            create, subtask, tasks, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3580,21 +5856,30 @@ class AsanaApp(APIApplication):
 
     def set_the_parent_of_atask(self, task_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Sets the parent of a task, providing optional parameters for specifying additional fields and formatting the response.
-        
+        Changes the parent task of a specified task by submitting a POST request to the "/tasks/{task_gid}/setParent" endpoint.
+
         Args:
-            data: A dictionary containing task data with a parent specification (e.g., 'parent_id').
-            opt_fields: Optional fields to include in the response, specified as a comma-separated list.
-            opt_pretty: Indicates whether the response should be formatted for readability, useful during debugging.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,parent,parent.created_by,parent.name,parent.resource_subtype,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "insert_after": "null",
+                    "insert_before": "124816",
+                    "parent": "987654"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the response data from setting the parent of a task.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully changed the parent of the specified subtask.
+
         Tags:
-            tasks, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3610,22 +5895,24 @@ class AsanaApp(APIApplication):
 
     def get_dependencies_from_atask(self, task_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve paginated dependencies of a task with optional filtering and formatting.
-        
+        Retrieves a list of dependencies for a task with the specified task GID, allowing customization with optional fields, pretty formatting, and pagination limits.
+
         Args:
-            limit: Results per page (1-100). Determines the number of dependencies to return per request.
-            offset: Offset token for pagination. Use the token returned by previous paginated requests to fetch subsequent pages.
-            opt_fields: Comma-separated list of optional fields to include in the compact response.
-            opt_pretty: Format response for readability. May increase latency and response size (recommended for debugging only).
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing paginated compact dependency representations and API response metadata.
-        
-        Raises:
-            requests.HTTPError: Raised for unsuccessful HTTP responses (e.g., 4XX/5XX status codes) during API communication.
-        
+            dict[str, Any]: Successfully retrieved the specified task's dependencies.
+
         Tags:
-            dependencies, paginated, task-management, get, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3637,20 +5924,30 @@ class AsanaApp(APIApplication):
 
     def set_dependencies_for_atask(self, task_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Set dependencies for a task by marking other tasks as its dependencies, up to a combined limit of 30 dependents and dependencies.
-        
+        Adds dependencies to a task using the task's GID and returns a status message, with optional pretty formatting.
+
         Args:
-            data: Dictionary containing task dependency details.
-            opt_pretty: Provide ‘pretty’ output for the response, with proper line breaking and indentation, suitable for debugging.
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "dependencies": [
+                      "133713",
+                      "184253"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary response representing the result of setting task dependencies.
-        
-        Raises:
-            requests.RequestException: Raised if there is an issue with the HTTP request, such as network errors or invalid responses.
-        
+            dict[str, Any]: Successfully set the specified dependencies on the task.
+
         Tags:
-            tasks, dependencies, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3666,20 +5963,30 @@ class AsanaApp(APIApplication):
 
     def unlink_dependencies_from_atask(self, task_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Unlink dependencies from a task by sending a request to the specified API endpoint.
-        
+        Removes dependencies from a task using the "POST" method at the "/tasks/{task_gid}/removeDependencies" path.
+
         Args:
-            data: Dictionary containing dependency data to unlink (empty dict if no data provided).
-            opt_pretty: Provides formatted output for readability during debugging.
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "dependencies": [
+                      "133713",
+                      "184253"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the API response after successful execution.
-        
-        Raises:
-            HTTPError: Raised when the API request fails (non-2xx status code).
-        
+            dict[str, Any]: Successfully unlinked the dependencies from the specified task.
+
         Tags:
-            unlink, dependencies, async_job, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3695,22 +6002,24 @@ class AsanaApp(APIApplication):
 
     def get_dependents_from_atask(self, task_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve the compact representations of all dependents of a task, optionally specifying pagination and optional fields.
-        
+        Retrieves a list of dependent tasks for a specified task using the GET method at "/tasks/{task_gid}/dependents," allowing for optional filtering with parameters such as `opt_fields`, `opt_pretty`, `limit`, and `offset`.
+
         Args:
-            limit: The number of results to return per page, between 1 and 100.
-            offset: An offset token for pagination, returned by a previous paginated request.
-            opt_fields: A comma-separated list of optional fields to include in the response.
-            opt_pretty: A flag to format the response in a 'pretty' (human-readable) format.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,offset,parent,parent.created_by,parent.name,parent.resource_subtype,path,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,uri,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing the compact representations of the dependents.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the specified dependents of the task.
+
         Tags:
-            get, dependents, task, pagination, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3722,20 +6031,30 @@ class AsanaApp(APIApplication):
 
     def set_dependents_for_atask(self, task_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Sets dependents for a task by marking a set of tasks as dependents if they are not already.
-        
+        Adds dependent tasks to a specified task using the POST method.
+
         Args:
-            data: Dictionary containing task data. This is optional and defaults to None.
-            opt_pretty: Option to provide 'pretty' output, such as formatted JSON for debugging purposes. This is optional and defaults to None.
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "dependents": [
+                      "133713",
+                      "184253"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary response containing the result of setting dependents.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when an HTTP error occurs during the request.
-        
+            dict[str, Any]: Successfully set the specified dependents on the given task.
+
         Tags:
-            tasks, management, important, async_job
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3751,20 +6070,30 @@ class AsanaApp(APIApplication):
 
     def unlink_dependents_from_atask(self, task_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Unlinks dependent tasks from the current task via an API request.
-        
+        Removes dependent tasks from the specified task using the POST method.
+
         Args:
-            data: Dictionary containing data required for unlinking dependents. Typically includes identifiers for dependents to remove.
-            opt_pretty: If provided, returns formatted JSON output for readability. Impacts performance and response size.
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "dependents": [
+                      "133713",
+                      "184253"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing API response data after processing the unlink request.
-        
-        Raises:
-            HTTPError: Raised for unsuccessful API responses (non-2xx status codes)
-        
+            dict[str, Any]: Successfully unlinked the specified tasks as dependents.
+
         Tags:
-            tasks, dependents, unlink, api, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3780,20 +6109,30 @@ class AsanaApp(APIApplication):
 
     def add_aproject_to_atask(self, task_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Associates a task with a project, optionally positioning it relative to other tasks or within a specific section. Returns the API response data.
-        
+        Adds a project to a specific task using the "POST" method at the path "/tasks/{task_gid}/addProject".
+
         Args:
-            data: Dictionary containing the task and project identifiers, along with optional placement parameters (insert_before, insert_after, section).
-            opt_pretty: When True, formats the API response for human readability (increases response size and processing time). Recommended for debugging only.
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "insert_after": "124816",
+                    "insert_before": "432134",
+                    "project": "13579",
+                    "section": "987654"
+                  }
+                }
+                ```
+
         Returns:
-            dict[str, Any]: Parsed JSON response from the API containing operation results (typically an empty data block for successful operations).
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails, including invalid project/task IDs, placement conflicts, or exceeding the 20-project limit per task.
-        
+            dict[str, Any]: Successfully added the specified project to the task.
+
         Tags:
-            task, project, add, update, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3809,20 +6148,27 @@ class AsanaApp(APIApplication):
 
     def remove_aproject_from_atask(self, task_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove a project from a task, ensuring the task remains in the system but is no longer associated with the specified project.
-        
+        Removes the specified project from a task while retaining the task in the system.
+
         Args:
-            data: A dictionary containing data related to the project removal (optional).
-            opt_pretty: Optional parameter to format the response in a readable format, useful for debugging.
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "project": "13579"
+                  }
+                }
+                ```
+
         Returns:
-            An empty data block in JSON format.
-        
-        Raises:
-            HTTPError: Raised if there is an issue with the HTTP request (e.g., server error).
-        
+            dict[str, Any]: Successfully removed the specified project from the task.
+
         Tags:
-            remove, project, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3838,20 +6184,27 @@ class AsanaApp(APIApplication):
 
     def add_atag_to_atask(self, task_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds a tag to a task and returns the result in JSON format.
-        
+        Adds a tag to a specified task in the system using the provided task identifier and returns a status message.
+
         Args:
-            data: A dictionary containing the data to be added; can be None.
-            opt_pretty: Optional flag to provide 'pretty' output, which includes proper line breaking and indentation for readability.
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "tag": "13579"
+                  }
+                }
+                ```
+
         Returns:
-            A JSON response containing the result of adding a tag to a task.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if an HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully added the specified tag to the task.
+
         Tags:
-            modify, task, management, async_job
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3867,20 +6220,27 @@ class AsanaApp(APIApplication):
 
     def remove_atag_from_atask(self, task_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove a tag from a task by sending a POST request with the task data.
-        
+        Removes a tag from a task with the specified identifier using the "POST" method and returns a status message.
+
         Args:
-            data: An optional dictionary containing data for the task
-            opt_pretty: An optional flag to provide the response in a pretty format
-        
+            task_gid (string): task_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "tag": "13579"
+                  }
+                }
+                ```
+
         Returns:
-            An empty data block returned as a dictionary
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the server returns an unsuccessful status code
-        
+            dict[str, Any]: Successfully removed the specified tag from the task.
+
         Tags:
-            remove, task, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3896,21 +6256,31 @@ class AsanaApp(APIApplication):
 
     def add_followers_to_atask(self, task_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds followers to a task, returning the updated task record.
-        
+        Adds followers to a specific task identified by its GID using the POST method, allowing optional fields and formatting for the response.
+
         Args:
-            data: Dictionary containing data for the followers to add. Default value: None.
-            opt_fields: Optional fields to include in the response, specified as a comma-separated list. Default value: None.
-            opt_pretty: Flag to format the response output. Default value: None.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,parent,parent.created_by,parent.name,parent.resource_subtype,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "followers": [
+                      "13579",
+                      "321654"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            The updated task record with added followers.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request fails, indicating a status code that signifies an error.
-        
+            dict[str, Any]: Successfully added the specified followers to the task.
+
         Tags:
-            add, followers, task, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3926,21 +6296,31 @@ class AsanaApp(APIApplication):
 
     def remove_followers_from_atask(self, task_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove specified followers from a task and return the updated task record.
-        
+        Removes specified followers from a task using the POST method, returning the updated task record.
+
         Args:
-            data: Dictionary containing follower removal data; expects a structured format of follower identifiers to remove.
-            opt_fields: Optional fields to include in response as comma-separated list. Used to expand default-compact responses.
-            opt_pretty: Enables pretty-printed JSON output at the cost of performance and response size.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,parent,parent.created_by,parent.name,parent.resource_subtype,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "followers": [
+                      "13579",
+                      "321654"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the complete updated task record after follower removal.
-        
-        Raises:
-            HTTPError: Raised for unsuccessful HTTP responses (e.g., 4XX/5XX status codes).
-        
+            dict[str, Any]: Successfully removed the specified followers from the task.
+
         Tags:
-            remove, followers, task, management, important
+            Tasks
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -3956,19 +6336,17 @@ class AsanaApp(APIApplication):
 
     def get_atask_for_agiven_custom_id(self, workspace_gid, custom_id) -> dict[str, Any]:
         """
-        Fetches a task associated with a given custom ID.
-        
+        Retrieves a task by its custom ID from a specified workspace using the Asana API.
+
         Args:
-            None: This function does not take any parameters.
-        
+            workspace_gid (string): workspace_gid
+            custom_id (string): custom_id
+
         Returns:
-            A dictionary containing the task details.
-        
-        Raises:
-            requests.RequestException: Raised if there is an issue with the HTTP request.
-        
+            dict[str, Any]: Successfully retrieved task for given custom ID.
+
         Tags:
-            task-retrieval, custom-id, important
+            Tasks
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -3982,72 +6360,71 @@ class AsanaApp(APIApplication):
 
     def search_tasks_in_aworkspace(self, workspace_gid, opt_fields=None, opt_pretty=None, text=None, resource_subtype=None, assignee_any=None, assignee_not=None, portfolios_any=None, projects_any=None, projects_not=None, projects_all=None, sections_any=None, sections_not=None, sections_all=None, tags_any=None, tags_not=None, tags_all=None, teams_any=None, followers_not=None, created_by_any=None, created_by_not=None, assigned_by_any=None, assigned_by_not=None, liked_by_not=None, commented_on_by_not=None, due_on_before=None, due_on_after=None, due_on=None, due_at_before=None, due_at_after=None, start_on_before=None, start_on_after=None, start_on=None, created_on_before=None, created_on_after=None, created_on=None, created_at_before=None, created_at_after=None, completed_on_before=None, completed_on_after=None, completed_on=None, completed_at_before=None, completed_at_after=None, modified_on_before=None, modified_on_after=None, modified_on=None, modified_at_before=None, modified_at_after=None, is_blocking=None, is_blocked=None, has_attachment=None, completed=None, is_subtask=None, sort_by=None, sort_ascending=None) -> dict[str, Any]:
         """
-        Searches for tasks in a workspace with extensive filtering capabilities based on task attributes, user interactions, dates, and custom parameters.
-        
+        Searches for tasks within a specified workspace using various filters, such as text, assignees, projects, tags, and due dates, and returns a list of tasks matching these criteria.
+
         Args:
-            assigned_byany: Comma-separated list of user identifiers from which assigned tasks should be included
-            assigned_bynot: Comma-separated list of user identifiers from which assigned tasks should be excluded
-            assigneeany: Comma-separated list of user identifiers for included assignees
-            assigneenot: Comma-separated list of user identifiers for excluded assignees
-            commented_on_bynot: Comma-separated list of user identifiers who should not have commented
-            completed: Filter to include only completed tasks (true) or exclude them (false)
-            completed_atafter: ISO 8601 datetime string for filtering tasks completed after this time
-            completed_atbefore: ISO 8601 datetime string for filtering tasks completed before this time
-            completed_on: ISO 8601 date string or `null` for filtering tasks completed on a specific date
-            completed_onafter: ISO 8601 date string for filtering tasks completed after this date
-            completed_onbefore: ISO 8601 date string for filtering tasks completed before this date
-            created_atafter: ISO 8601 datetime string for filtering tasks created after this time
-            created_atbefore: ISO 8601 datetime string for filtering tasks created before this time
-            created_byany: Comma-separated list of user identifiers for task creators to include
-            created_bynot: Comma-separated list of user identifiers for task creators to exclude
-            created_on: ISO 8601 date string or `null` for filtering tasks created on a specific date
-            created_onafter: ISO 8601 date string for filtering tasks created after this date
-            created_onbefore: ISO 8601 date string for filtering tasks created before this date
-            due_atafter: ISO 8601 datetime string for filtering tasks due after this time
-            due_atbefore: ISO 8601 datetime string for filtering tasks due before this time
-            due_on: ISO 8601 date string or `null` for filtering tasks due on a specific date
-            due_onafter: ISO 8601 date string for filtering tasks due after this date
-            due_onbefore: ISO 8601 date string for filtering tasks due before this date
-            followersnot: Comma-separated list of user identifiers who should not be followers
-            has_attachment: Filter to include only tasks with attachments (true) or exclude them (false)
-            is_blocked: Filter to include only tasks with incomplete dependencies (true) or exclude them (false)
-            is_blocking: Filter to include only incomplete tasks with dependents (true) or exclude them (false)
-            is_subtask: Filter to include only subtasks (true) or exclude them (false)
-            liked_bynot: Comma-separated list of user identifiers who should not have liked the task
-            modified_atafter: ISO 8601 datetime string for filtering tasks modified after this time
-            modified_atbefore: ISO 8601 datetime string for filtering tasks modified before this time
-            modified_on: ISO 8601 date string or `null` for filtering tasks modified on a specific date
-            modified_onafter: ISO 8601 date string for filtering tasks modified after this date
-            modified_onbefore: ISO 8601 date string for filtering tasks modified before this date
-            opt_fields: Comma-separated list of optional properties to include in the response
-            opt_pretty: Controls pretty JSON output formatting (recommended for debugging only)
-            portfoliosany: Comma-separated list of portfolio IDs to include
-            projectsall: Comma-separated list of project IDs for tasks belonging to ALL specified projects
-            projectsany: Comma-separated list of project IDs to include
-            projectsnot: Comma-separated list of project IDs to exclude
-            resource_subtype: Filters results by specific task subtype
-            sectionsall: Comma-separated list of section/column IDs for tasks in ALL specified sections
-            sectionsany: Comma-separated list of section/column IDs to include
-            sectionsnot: Comma-separated list of section/column IDs to exclude
-            sort_ascending: Sort results in ascending order (default: false)
-            sort_by: Sort field (due_date, created_at, completed_at, likes, or modified_at)
-            start_on: ISO 8601 date string or `null` for filtering tasks starting on a specific date
-            start_onafter: ISO 8601 date string for filtering tasks starting after this date
-            start_onbefore: ISO 8601 date string for filtering tasks starting before this date
-            tagsall: Comma-separated list of tag IDs for tasks containing ALL specified tags
-            tagsany: Comma-separated list of tag IDs to include
-            tagsnot: Comma-separated list of tag IDs to exclude
-            teamsany: Comma-separated list of team IDs to include
-            text: Full-text search term for task name and description
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'actual_time_minutes,approval_status,assignee,assignee.name,assignee_section,assignee_section.name,assignee_status,completed,completed_at,completed_by,completed_by.name,created_at,created_by,custom_fields,custom_fields.asana_created_field,custom_fields.created_by,custom_fields.created_by.name,custom_fields.currency_code,custom_fields.custom_label,custom_fields.custom_label_position,custom_fields.date_value,custom_fields.date_value.date,custom_fields.date_value.date_time,custom_fields.description,custom_fields.display_value,custom_fields.enabled,custom_fields.enum_options,custom_fields.enum_options.color,custom_fields.enum_options.enabled,custom_fields.enum_options.name,custom_fields.enum_value,custom_fields.enum_value.color,custom_fields.enum_value.enabled,custom_fields.enum_value.name,custom_fields.format,custom_fields.has_notifications_enabled,custom_fields.id_prefix,custom_fields.is_formula_field,custom_fields.is_global_to_workspace,custom_fields.is_value_read_only,custom_fields.multi_enum_values,custom_fields.multi_enum_values.color,custom_fields.multi_enum_values.enabled,custom_fields.multi_enum_values.name,custom_fields.name,custom_fields.number_value,custom_fields.people_value,custom_fields.people_value.name,custom_fields.precision,custom_fields.representation_type,custom_fields.resource_subtype,custom_fields.text_value,custom_fields.type,dependencies,dependents,due_at,due_on,external,external.data,followers,followers.name,hearted,hearts,hearts.user,hearts.user.name,html_notes,is_rendered_as_separator,liked,likes,likes.user,likes.user.name,memberships,memberships.project,memberships.project.name,memberships.section,memberships.section.name,modified_at,name,notes,num_hearts,num_likes,num_subtasks,parent,parent.created_by,parent.name,parent.resource_subtype,permalink_url,projects,projects.name,resource_subtype,start_at,start_on,tags,tags.name,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            text (string): Performs full-text search on both task name and description Example: 'Bug'.
+            resource_subtype (string): Filters results by the task's resource_subtype Example: 'milestone'.
+            assignee_any (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            assignee_not (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            portfolios_any (string): Comma-separated list of portfolio IDs Example: '12345,23456,34567'.
+            projects_any (string): Comma-separated list of project IDs Example: '12345,23456,34567'.
+            projects_not (string): Comma-separated list of project IDs Example: '12345,23456,34567'.
+            projects_all (string): Comma-separated list of project IDs Example: '12345,23456,34567'.
+            sections_any (string): Comma-separated list of section or column IDs Example: '12345,23456,34567'.
+            sections_not (string): Comma-separated list of section or column IDs Example: '12345,23456,34567'.
+            sections_all (string): Comma-separated list of section or column IDs Example: '12345,23456,34567'.
+            tags_any (string): Comma-separated list of tag IDs Example: '12345,23456,34567'.
+            tags_not (string): Comma-separated list of tag IDs Example: '12345,23456,34567'.
+            tags_all (string): Comma-separated list of tag IDs Example: '12345,23456,34567'.
+            teams_any (string): Comma-separated list of team IDs Example: '12345,23456,34567'.
+            followers_not (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            created_by_any (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            created_by_not (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            assigned_by_any (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            assigned_by_not (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            liked_by_not (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            commented_on_by_not (string): Comma-separated list of user identifiers Example: '12345,23456,34567'.
+            due_on_before (string): ISO 8601 date string Example: '2019-09-15'.
+            due_on_after (string): ISO 8601 date string Example: '2019-09-15'.
+            due_on (string): ISO 8601 date string or `null` Example: '2019-09-15'.
+            due_at_before (string): ISO 8601 datetime string Example: '2019-04-15T01:01:46.055Z'.
+            due_at_after (string): ISO 8601 datetime string Example: '2019-04-15T01:01:46.055Z'.
+            start_on_before (string): ISO 8601 date string Example: '2019-09-15'.
+            start_on_after (string): ISO 8601 date string Example: '2019-09-15'.
+            start_on (string): ISO 8601 date string or `null` Example: '2019-09-15'.
+            created_on_before (string): ISO 8601 date string Example: '2019-09-15'.
+            created_on_after (string): ISO 8601 date string Example: '2019-09-15'.
+            created_on (string): ISO 8601 date string or `null` Example: '2019-09-15'.
+            created_at_before (string): ISO 8601 datetime string Example: '2019-04-15T01:01:46.055Z'.
+            created_at_after (string): ISO 8601 datetime string Example: '2019-04-15T01:01:46.055Z'.
+            completed_on_before (string): ISO 8601 date string Example: '2019-09-15'.
+            completed_on_after (string): ISO 8601 date string Example: '2019-09-15'.
+            completed_on (string): ISO 8601 date string or `null` Example: '2019-09-15'.
+            completed_at_before (string): ISO 8601 datetime string Example: '2019-04-15T01:01:46.055Z'.
+            completed_at_after (string): ISO 8601 datetime string Example: '2019-04-15T01:01:46.055Z'.
+            modified_on_before (string): ISO 8601 date string Example: '2019-09-15'.
+            modified_on_after (string): ISO 8601 date string Example: '2019-09-15'.
+            modified_on (string): ISO 8601 date string or `null` Example: '2019-09-15'.
+            modified_at_before (string): ISO 8601 datetime string Example: '2019-04-15T01:01:46.055Z'.
+            modified_at_after (string): ISO 8601 datetime string Example: '2019-04-15T01:01:46.055Z'.
+            is_blocking (string): Filter to incomplete tasks with dependents Example: 'false'.
+            is_blocked (string): Filter to tasks with incomplete dependencies Example: 'false'.
+            has_attachment (string): Filter to tasks with attachments Example: 'false'.
+            completed (string): Filter to completed tasks Example: 'false'.
+            is_subtask (string): Filter to subtasks Example: 'false'.
+            sort_by (string): One of `due_date`, `created_at`, `completed_at`, `likes`, or `modified_at`, defaults to `modified_at` Example: 'likes'.
+            sort_ascending (string): Default `false` Example: 'true'.
+
         Returns:
-            Dictionary containing task data matching the specified filters. Exact structure depends on opt_fields parameter and API implementation.
-        
-        Raises:
-            HTTPError: Raised when the API request fails due to network issues, authentication problems, or invalid parameters.
-        
+            dict[str, Any]: Successfully retrieved the section's tasks.
+
         Tags:
-            search, task-management, filtering, api-client, important
+            Tasks
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -4059,23 +6436,24 @@ class AsanaApp(APIApplication):
 
     def get_multiple_task_templates(self, limit=None, offset=None, project=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve multiple task templates with pagination and filtering options. Returns compact records of task templates filtered by specified criteria, requiring a project parameter for filtering.
-        
+        Retrieves a list of available task templates for standardized task creation, supporting optional filters like project, pagination (limit/offset), and field customization (opt_fields).
+
         Args:
-            limit: Results per page. Must be between 1 and 100. Defaults to API's default page size if not specified.
-            offset: Offset token for pagination. Must use a token returned by a previous paginated request. Omit to retrieve first page.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Enable pretty-printed JSON output (for debugging only, increases response size/time).
-            project: Project ID to filter task templates. Required for successful filtering.
-        
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            project (string): The project to filter task templates on. Example: '321654'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,created_by,name,project,template'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the JSON response with compact task template records and pagination details.
-        
-        Raises:
-            requests.HTTPError: Raised for API request failures (e.g., invalid project ID, authentication errors, or server issues).
-        
+            dict[str, Any]: Successfully retrieved requested task templates
+
         Tags:
-            task-templates, list, pagination, async-job, management, important
+            Task templates
         """
         url = f"{self.base_url}/task_templates"
         query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('project', project), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -4085,20 +6463,19 @@ class AsanaApp(APIApplication):
 
     def get_atask_template(self, task_template_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a complete task template record.
-        
+        Retrieves detailed information about a specific task template in Asana using the "GET" method at the "/task_templates/{task_template_gid}" path.
+
         Args:
-            opt_fields: A comma-separated list of optional properties to include in the response.
-            opt_pretty: Enables 'pretty' output for the response, useful for debugging.
-        
+            task_template_gid (string): task_template_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,created_by,name,project,template'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the task template record.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved requested task template
+
         Tags:
-            template, task-management, async_job, fetch, important
+            Task templates
         """
         if task_template_gid is None:
             raise ValueError("Missing required parameter 'task_template_gid'")
@@ -4110,19 +6487,18 @@ class AsanaApp(APIApplication):
 
     def delete_atask_template(self, task_template_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Deletes a specific task template by making a DELETE request and returns an empty data record.
-        
+        Deletes a specific task template by making a DELETE request to the API endpoint, returning an empty response upon success.
+
         Args:
-            opt_pretty: Provides the response in a 'pretty' format. In the case of JSON, this means proper line breaking and indentation. Advisable only during debugging.
-        
+            task_template_gid (string): task_template_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            An empty data record in JSON format.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully deleted the specified task template.
+
         Tags:
-            delete, task-template, important, management
+            Task templates
         """
         if task_template_gid is None:
             raise ValueError("Missing required parameter 'task_template_gid'")
@@ -4134,21 +6510,28 @@ class AsanaApp(APIApplication):
 
     def instantiate_atask_from_atask_template(self, task_template_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Instantiate a task from a task template, creating and returning a job to handle the task asynchronously.
-        
+        Instantiates a task from a specified task template using the Asana API, allowing for the creation of standardized and repeatable workflows by leveraging pre-defined templates.
+
         Args:
-            data: A dictionary containing task data used for instantiation. This is optional and defaults to None.
-            opt_fields: Optional fields to include in the response. This should be a comma-separated list of properties.
-            opt_pretty: Determines if the output should be in a pretty format. Useful for debugging.
-        
+            task_template_gid (string): task_template_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'new_project,new_project.name,new_project_template,new_project_template.name,new_task,new_task.created_by,new_task.name,new_task.resource_subtype,new_task_template,new_task_template.name,resource_subtype,status'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "name": "New Task"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the job details.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when an HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully created the job to handle task instantiation.
+
         Tags:
-            instantiate, task-template, async-job, job-management, important
+            Task templates
         """
         if task_template_gid is None:
             raise ValueError("Missing required parameter 'task_template_gid'")
@@ -4164,21 +6547,40 @@ class AsanaApp(APIApplication):
 
     def create_ateam(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Creates a team within the current workspace.
-        
+        Creates a new team resource using the API at the "/teams" path with the "POST" method.
+
         Args:
-            data: Dictionary containing team creation data.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Flag to provide response in a pretty format.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'description,edit_team_name_or_description_access_level,edit_team_visibility_or_trash_team_access_level,guest_invite_management_access_level,html_description,join_request_management_access_level,member_invite_management_access_level,name,organization,organization.name,permalink_url,team_content_management_access_level,team_member_removal_access_level,visibility'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "description": "All developers should be members of this team.",
+                    "edit_team_name_or_description_access_level": "only_team_admins",
+                    "edit_team_visibility_or_trash_team_access_level": "all_team_members",
+                    "gid": "12345",
+                    "guest_invite_management_access_level": "all_team_members",
+                    "html_description": "<body><em>All</em> developers should be members of this team.</body>",
+                    "join_request_management_access_level": "all_team_members",
+                    "member_invite_management_access_level": "only_team_admins",
+                    "name": "Marketing",
+                    "organization": "123456789",
+                    "resource_type": "task",
+                    "team_content_management_access_level": "only_team_admins",
+                    "team_member_removal_access_level": "only_team_admins",
+                    "visibility": "request_to_join"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary representing the created team.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully created a new team.
+
         Tags:
-            create, team, management, important
+            Teams
         """
         request_body = {
             'data': data,
@@ -4192,20 +6594,19 @@ class AsanaApp(APIApplication):
 
     def get_ateam(self, team_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve detailed information about a team, including optional fields and formatted output as specified.
-        
+        Retrieves details for a specific GitHub team by its global ID, supporting optional query parameters to customize the response format and included fields.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response (excluded by default).
-            opt_pretty: Format response with improved readability at the cost of performance. Recommended only for debugging.
-        
+            team_gid (string): team_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'description,edit_team_name_or_description_access_level,edit_team_visibility_or_trash_team_access_level,guest_invite_management_access_level,html_description,join_request_management_access_level,member_invite_management_access_level,name,organization,organization.name,permalink_url,team_content_management_access_level,team_member_removal_access_level,visibility'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the full record of the requested team, including specified optional fields.
-        
-        Raises:
-            HTTPError: If the API request fails due to network issues, invalid parameters, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the record for a single team.
+
         Tags:
-            teams, get, api-endpoint, management, important
+            Teams
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -4217,21 +6618,41 @@ class AsanaApp(APIApplication):
 
     def update_ateam(self, team_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Update a team within the current workspace, including modifying team data and requesting optional fields in the response.
-        
+        Updates the details of a team with the specified GID using the provided parameters, returning a status response based on the operation's success or failure.
+
         Args:
-            data: dict containing team data to update. 'None' results in no data being submitted.
-            opt_fields: comma-separated list of optional properties to include in the response (excluded by default).
-            opt_pretty: enable formatted JSON output with proper indentation (increases response size and processing time).
-        
+            team_gid (string): team_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'description,edit_team_name_or_description_access_level,edit_team_visibility_or_trash_team_access_level,guest_invite_management_access_level,html_description,join_request_management_access_level,member_invite_management_access_level,name,organization,organization.name,permalink_url,team_content_management_access_level,team_member_removal_access_level,visibility'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "description": "All developers should be members of this team.",
+                    "edit_team_name_or_description_access_level": "only_team_admins",
+                    "edit_team_visibility_or_trash_team_access_level": "all_team_members",
+                    "gid": "12345",
+                    "guest_invite_management_access_level": "all_team_members",
+                    "html_description": "<body><em>All</em> developers should be members of this team.</body>",
+                    "join_request_management_access_level": "all_team_members",
+                    "member_invite_management_access_level": "only_team_admins",
+                    "name": "Marketing",
+                    "organization": "123456789",
+                    "resource_type": "task",
+                    "team_content_management_access_level": "only_team_admins",
+                    "team_member_removal_access_level": "only_team_admins",
+                    "visibility": "request_to_join"
+                  }
+                }
+                ```
+
         Returns:
-            dict containing the updated team resource, with fields determined by opt_fields parameter.
-        
-        Raises:
-            requests.HTTPError: raised for unsuccessful HTTP responses (e.g., 4XX/5XX status codes)
-        
+            dict[str, Any]: Successfully updated the team.
+
         Tags:
-            teams, update, management, important
+            Teams
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -4247,22 +6668,24 @@ class AsanaApp(APIApplication):
 
     def get_teams_in_aworkspace(self, workspace_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve paginated records of teams in a workspace visible to the authorized user.
-        
+        Retrieves a list of teams in a specified workspace using the GET method, allowing optional query parameters for customizing output fields, formatting, and pagination.
+
         Args:
-            limit: Results per page (1-100). Controls the number of objects returned per page.
-            offset: Offset token for pagination. Use the token from a previous paginated response to fetch subsequent pages.
-            opt_fields: Comma-separated list of optional properties to include in the compact resource response.
-            opt_pretty: If true, returns a formatted JSON response for readability during debugging (increases response size and processing time).
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'description,edit_team_name_or_description_access_level,edit_team_visibility_or_trash_team_access_level,guest_invite_management_access_level,html_description,join_request_management_access_level,member_invite_management_access_level,name,offset,organization,organization.name,path,permalink_url,team_content_management_access_level,team_member_removal_access_level,uri,visibility'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing the JSON response with compact team records and pagination details.
-        
-        Raises:
-            requests.HTTPError: Raised for failed API requests (e.g., invalid credentials, rate limiting, or server errors).
-        
+            dict[str, Any]: Returns the team records for all teams in the organization or workspace accessible to the authenticated user.
+
         Tags:
-            teams, workspace, pagination, api-client, list, important
+            Teams
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -4274,23 +6697,25 @@ class AsanaApp(APIApplication):
 
     def get_teams_for_auser(self, user_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None, organization=None) -> dict[str, Any]:
         """
-        Retrieve paginated list of compact team records for a user based on workspace/organization filter.
-        
+        Retrieves a paginated list of teams associated with a specific user, optionally filtered by organization, using query parameters for customization.
+
         Args:
-            limit: Results per page (1-100). Controls number of objects returned per API call.
-            offset: Pagination token from previous response. Required for subsequent pages.
-            opt_fields: Comma-separated optional properties to include in response.
-            opt_pretty: Format response for readability (debugging only).
-            organization: Required workspace/organization identifier to filter teams.
-        
+            user_gid (string): user_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'description,edit_team_name_or_description_access_level,edit_team_visibility_or_trash_team_access_level,guest_invite_management_access_level,html_description,join_request_management_access_level,member_invite_management_access_level,name,offset,organization,organization.name,path,permalink_url,team_content_management_access_level,team_member_removal_access_level,uri,visibility'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            organization (string): (Required) The workspace or organization to filter teams on. Example: '1331'.
+
         Returns:
-            Dictionary containing paginated API response with team records and metadata.
-        
-        Raises:
-            HTTPError: When API request fails (4XX/5XX status codes).
-        
+            dict[str, Any]: Returns the team records for all teams in the organization or workspace to which the given user is assigned.
+
         Tags:
-            teams, user-management, pagination, api-client, important
+            Teams
         """
         if user_gid is None:
             raise ValueError("Missing required parameter 'user_gid'")
@@ -4302,21 +6727,28 @@ class AsanaApp(APIApplication):
 
     def add_auser_to_ateam(self, team_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Adds a user to a team and returns the complete team membership record. Requires the calling user to be a team member and the added user to exist in the same organization.
-        
+        Adds a user to a team using the provided team ID, allowing for optional specification of additional fields and formatting preferences.
+
         Args:
-            data: Dictionary containing required data for user-to-team association (specific fields not disclosed in annotation)
-            opt_fields: Comma-separated list of optional fields to include in response (enhanced detail)
-            opt_pretty: Formats JSON output with indentation for human readability (performance-intensive)
-        
+            team_gid (string): team_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'is_admin,is_guest,is_limited_access,team,team.name,user,user.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "user": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Complete team membership record (dictionary) for the newly added user, including optional fields when specified
-        
-        Raises:
-            HTTPError: When the POST request fails (4XX/5XX status) or authorization requirements aren't met
-        
+            dict[str, Any]: Successfully added user to the team.
+
         Tags:
-            add, user-management, team-management, membership, important
+            Teams
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -4332,20 +6764,27 @@ class AsanaApp(APIApplication):
 
     def remove_auser_from_ateam(self, team_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove a user from a team, requiring team membership in the calling user.
-        
+        Removes a user from a specified team using a POST request and returns a success status upon completion.
+
         Args:
-            data: Dictionary containing user/team data (specific fields not specified). Must include required identifiers.
-            opt_pretty: Provides formatted output (line breaks/indentation) at performance cost. Recommended for debugging only.
-        
+            team_gid (string): team_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "user": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            JSON response dictionary containing operation results.
-        
-        Raises:
-            requests.HTTPError: Raised for failed API requests (4XX/5XX status codes) during removal.
-        
+            dict[str, Any]: Returns an empty data record
+
         Tags:
-            teams, user-management, remove, api, important
+            Teams
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -4361,20 +6800,19 @@ class AsanaApp(APIApplication):
 
     def get_ateam_membership(self, team_membership_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Get a team membership record. Returns the complete membership details for a single team.
-        
+        Retrieves a specific team membership using the "GET" method at "/team_memberships/{team_membership_gid}", allowing optional fields and formatting parameters to be specified.
+
         Args:
-            opt_fields: Optional fields to include in the response. Pass a comma-separated list of properties to include.
-            opt_pretty: Optional parameter to format the JSON response for readability.
-        
+            team_membership_gid (string): team_membership_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'is_admin,is_guest,is_limited_access,team,team.name,user,user.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the team membership record.
-        
-        Raises:
-            requests.HTTPError: Raised if there is an HTTP error with the request (e.g., network error, server returns a non-200 status code).
-        
+            dict[str, Any]: Successfully retrieved the requested team membership.
+
         Tags:
-            team, membership, retrieve, important
+            Team memberships
         """
         if team_membership_gid is None:
             raise ValueError("Missing required parameter 'team_membership_gid'")
@@ -4386,25 +6824,26 @@ class AsanaApp(APIApplication):
 
     def get_team_memberships(self, team=None, user=None, workspace=None, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve team membership records with pagination and optional field filtering.
-        
+        Retrieves team membership information for a specified user within a team and workspace, allowing optional fields and pagination.
+
         Args:
-            limit: Results per page. The number of objects to return (1-100).
-            offset: Offset token for pagination. Use the token from a prior paginated response.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Format response with indentation/line-breaks for readability (debugging use only).
-            team: Globally unique identifier for the team.
-            user: User identifier ('me', email, or gid). Must be used with workspace parameter.
-            workspace: Globally unique workspace identifier. Must be used with user parameter.
-        
+            team (string): Globally unique identifier for the team. Example: '159874'.
+            user (string): A string identifying a user. This can either be the string "me", an email, or the gid of a user. This parameter must be used with the workspace parameter. Example: '512241'.
+            workspace (string): Globally unique identifier for the workspace. This parameter must be used with the user parameter. Example: '31326'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'is_admin,is_guest,is_limited_access,offset,path,team,team.name,uri,user,user.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing paginated compact team membership records, typically including 'data' array and 'next_page' metadata.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid parameters, authentication, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the requested team memberships.
+
         Tags:
-            team-memberships, pagination, api-call, retrieval, management, collaboration, important
+            Team memberships
         """
         url = f"{self.base_url}/team_memberships"
         query_params = {k: v for k, v in [('team', team), ('user', user), ('workspace', workspace), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
@@ -4414,22 +6853,24 @@ class AsanaApp(APIApplication):
 
     def get_memberships_from_ateam(self, team_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve paginated team memberships with optional field inclusion and response formatting.
-        
+        Retrieves team memberships for a specified team using the GitHub API, returning details about members based on optional fields and pagination parameters.
+
         Args:
-            limit: Results per page, between 1-100. Controls the number of objects returned per page.
-            offset: Offset token for pagination. Use the token returned from a previous paginated request to fetch subsequent pages.
-            opt_fields: Comma-separated list of optional fields to include in the response. Excluded by default.
-            opt_pretty: Format response for readability (increases processing time and response size). Recommended for debugging only.
-        
+            team_gid (string): team_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'is_admin,is_guest,is_limited_access,offset,path,team,team.name,uri,user,user.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing paginated team membership data retrieved from the API.
-        
-        Raises:
-            HTTPError: When the API request fails due to network issues, invalid parameters, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the requested team's memberships.
+
         Tags:
-            team-memberships, pagination, api-client, get, important
+            Team memberships
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -4441,23 +6882,25 @@ class AsanaApp(APIApplication):
 
     def get_memberships_from_auser(self, user_gid, workspace=None, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieves memberships for a user, returning compact team membership records.
-        
+        Retrieves a paginated list of team memberships for a specified user, including optional filtering by workspace and customizable response fields.
+
         Args:
-            limit: Results per page; must be between 1 and 100. Defaults to None.
-            offset: Offset token for pagination; returned by a previous API request. Defaults to None.
-            opt_fields: Comma-separated list of optional fields to include in the response. Defaults to None.
-            opt_pretty: Provides response in a formatted (pretty) JSON format, which may slow down the response. Defaults to None.
-            workspace: Globally unique identifier for the workspace. Required.
-        
+            user_gid (string): user_gid
+            workspace (string): (Required) Globally unique identifier for the workspace. Example: '31326'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'is_admin,is_guest,is_limited_access,offset,path,team,team.name,uri,user,user.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing membership records for the user.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request fails due to a status code error.
-        
+            dict[str, Any]: Successfully retrieved the requested users's memberships.
+
         Tags:
-            memberships, team, user-data, important
+            Team memberships
         """
         if user_gid is None:
             raise ValueError("Missing required parameter 'user_gid'")
@@ -4469,20 +6912,19 @@ class AsanaApp(APIApplication):
 
     def get_atime_period(self, time_period_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a specific time period record with optional field inclusions and formatted output.
-        
+        Retrieves details about a specific time period, identified by its GID, using the "GET" method at the "/time_periods/{time_period_gid}" path.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response (excluded by default).
-            opt_pretty: Format response with indentation/line breaks for readability (increases response size and processing time).
-        
+            time_period_gid (string): time_period_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'display_name,end_on,parent,parent.display_name,parent.end_on,parent.period,parent.start_on,period,start_on'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Full time period record as a dictionary containing all available data fields.
-        
-        Raises:
-            HTTPError: When the request returns a non-2xx status code, indicating server/client errors.
-        
+            dict[str, Any]: Successfully retrieved the record for a single time period.
+
         Tags:
-            time-periods, get, record, api, important
+            Time periods
         """
         if time_period_gid is None:
             raise ValueError("Missing required parameter 'time_period_gid'")
@@ -4494,25 +6936,26 @@ class AsanaApp(APIApplication):
 
     def get_time_periods(self, start_on=None, end_on=None, workspace=None, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve compact time period records based on specified date range and pagination parameters.
-        
+        Retrieves a list of time periods filtered by start and end dates, workspace, and other optional parameters.
+
         Args:
-            end_on: ISO 8601 date string for the end of the period (inclusive). If not provided, default behavior applies.
-            limit: Number of results per page (1-100). Determines pagination size when multiple pages exist.
-            offset: Token from previous paginated response to get next page. Required for subsequent pages after initial request.
-            opt_fields: Comma-separated property names to include in response instead of default compact format.
-            opt_pretty: Pretty-print JSON output with formatting for human readability (debugging only).
-            start_on: ISO 8601 date string for the period start (inclusive). If not provided, default behavior applies.
-            workspace: (Required) Globally unique workspace identifier to scope the request.
-        
+            start_on (string): ISO 8601 date string Example: '2019-09-15'.
+            end_on (string): ISO 8601 date string Example: '2019-09-15'.
+            workspace (string): (Required) Globally unique identifier for the workspace. Example: '31326'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'display_name,end_on,offset,parent,parent.display_name,parent.end_on,parent.period,parent.start_on,path,period,start_on,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing paginated time period records in JSON format from the API response.
-        
-        Raises:
-            HTTPError: Raised for invalid API requests, authentication failures, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the requested time periods.
+
         Tags:
-            time-periods, pagination, api-client, data-retrieval, important
+            Time periods
         """
         url = f"{self.base_url}/time_periods"
         query_params = {k: v for k, v in [('start_on', start_on), ('end_on', end_on), ('workspace', workspace), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
@@ -4522,22 +6965,24 @@ class AsanaApp(APIApplication):
 
     def get_time_tracking_entries_for_atask(self, task_gid, limit=None, offset=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve paginated time tracking entries for a specific task.
-        
+        Retrieves a list of time tracking entries for a specific task based on provided query parameters, such as limit, offset, and optional fields, returning the data in a formatted response.
+
         Args:
-            limit: Results per page. The number of objects to return per page. The value must be between 1 and 100.
-            offset: Offset token for pagination. Use the token returned from a prior paginated request.
-            opt_fields: Optional properties to include in the response as a comma-separated list.
-            opt_pretty: Enable pretty output formatting for readability (may impact performance).
-        
+            task_gid (string): task_gid
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_by,created_by.name,duration_minutes,entered_on,offset,path,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the time tracking entries and pagination details.
-        
-        Raises:
-            HTTPError: If the API request fails or returns an error status code.
-        
+            dict[str, Any]: Successfully retrieved the requested time tracking entries.
+
         Tags:
-            time-tracking, entries, pagination, async-job, management, important
+            Time tracking entries
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -4549,21 +6994,29 @@ class AsanaApp(APIApplication):
 
     def create_atime_tracking_entry(self, task_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Create a new time tracking entry for a given task.
-        
+        Creates a new time tracking entry for a specified task using the POST method, allowing for optional fields and formatting through query parameters.
+
         Args:
-            data: Dictionary of data for the time tracking entry. Defaults to None.
-            opt_fields: A comma-separated list of optional fields to include in the response. Defaults to None.
-            opt_pretty: Boolean or string to format the response in a pretty format. Defaults to None.
-        
+            task_gid (string): task_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,created_by,created_by.name,duration_minutes,entered_on,task,task.created_by,task.name,task.resource_subtype'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "duration_minutes": 12,
+                    "entered_on": "2023-03-19"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the newly created time tracking entry.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully created a time tracking entry for the task.
+
         Tags:
-            time-tracking, asynchronous, create-entry, management, important
+            Time tracking entries
         """
         if task_gid is None:
             raise ValueError("Missing required parameter 'task_gid'")
@@ -4579,20 +7032,19 @@ class AsanaApp(APIApplication):
 
     def get_atime_tracking_entry(self, time_tracking_entry_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves a complete time tracking entry record from the API, returning all available data in dictionary format.
-        
+        Retrieves a specific time tracking entry by its global ID, allowing optional field selection for the response.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response. Excludes certain properties by default.
-            opt_pretty: Formats the response with improved readability (e.g., indentation and line breaks) at the cost of performance and response size.
-        
+            time_tracking_entry_gid (string): time_tracking_entry_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,created_by,created_by.name,duration_minutes,entered_on,task,task.created_by,task.name,task.resource_subtype'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the full time tracking entry record with requested fields.
-        
-        Raises:
-            HTTPError: If the API request fails due to network issues, invalid parameters, or server errors.
-        
+            dict[str, Any]: Successfully retrieved the requested time tracking entry.
+
         Tags:
-            time-tracking, get, api-client, management, important
+            Time tracking entries
         """
         if time_tracking_entry_gid is None:
             raise ValueError("Missing required parameter 'time_tracking_entry_gid'")
@@ -4604,21 +7056,29 @@ class AsanaApp(APIApplication):
 
     def update_atime_tracking_entry(self, time_tracking_entry_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing time tracking entry by sending a PUT request with the specified fields.
-        
+        Updates an existing time tracking entry by its GID and returns the modified entry.
+
         Args:
-            data: Dictionary of fields to update in the time tracking entry. Only specified fields are updated.
-            opt_fields: A comma-separated list of optional properties to include in the response.
-            opt_pretty: If set, returns the response in a pretty format for debugging purposes.
-        
+            time_tracking_entry_gid (string): time_tracking_entry_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,created_by,created_by.name,duration_minutes,entered_on,task,task.created_by,task.name,task.resource_subtype'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "duration_minutes": 12,
+                    "entered_on": "2023-03-19"
+                  }
+                }
+                ```
+
         Returns:
-            The complete updated time tracking entry record.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails for any reason, such as a connection error or a non-200 status code.
-        
+            dict[str, Any]: Successfully updated the time tracking entry.
+
         Tags:
-            update, time-tracking, async_job, management, important
+            Time tracking entries
         """
         if time_tracking_entry_gid is None:
             raise ValueError("Missing required parameter 'time_tracking_entry_gid'")
@@ -4634,19 +7094,18 @@ class AsanaApp(APIApplication):
 
     def delete_atime_tracking_entry(self, time_tracking_entry_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Delete a specific time tracking entry via DELETE request to its URL.
-        
+        Deletes a specific time tracking entry identified by the `time_tracking_entry_gid` using the DELETE method and returns relevant status messages based on the success or failure of the operation.
+
         Args:
-            opt_pretty: Provides 'pretty' JSON output with formatting for readability. Increases response size and processing time (recommended for debugging only).
-        
+            time_tracking_entry_gid (string): time_tracking_entry_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Empty dictionary representing successful deletion confirmation.
-        
-        Raises:
-            HTTPError: Raised for failed requests (4XX/5XX status codes)
-        
+            dict[str, Any]: Successfully deleted the specified time tracking entry.
+
         Tags:
-            delete, time-tracking, management, important
+            Time tracking entries
         """
         if time_tracking_entry_gid is None:
             raise ValueError("Missing required parameter 'time_tracking_entry_gid'")
@@ -4658,24 +7117,23 @@ class AsanaApp(APIApplication):
 
     def get_objects_via_typeahead(self, workspace_gid, opt_fields=None, resource_type=None, type=None, query=None, count=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves objects from a workspace using a typeahead search algorithm, providing a limited set of results quickly for auto-completion features.
-        
+        Queries a workspace for typeahead results using the specified parameters and returns relevant objects or suggestions.
+
         Args:
-            count: The number of results to return. Defaults to 20 if omitted, with a minimum of 1 and a maximum of 100.
-            opt_fields: A comma-separated list of optional properties to include in the response, beyond the default compact representation.
-            opt_pretty: Flag to provide the response in a 'pretty' format, which may increase response size and processing time.
-            query: The search string used for typeahead queries. Leaving it empty still yields ordered results based on resource types.
-            resource_type: The type of objects to return (e.g., custom_field, goal, project, portfolio, tag, task, team, user).
-            type: *Deprecated*; new integrations should use the resource_type field instead.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'name'.
+            resource_type (string): (Required) The type of values the typeahead should return. You can choose from one of the following: `custom_field`, `goal`, `project`, `project_template`, `portfolio`, `tag`, `task`, `team`, and `user`. Note that unlike in the names of endpoints, the types listed here are in singular form (e.g. `task`). Using multiple types is not yet supported. Example: 'user'.
+            type (string): *Deprecated: new integrations should prefer the resource_type field.* Example: 'user'.
+            query (string): The string that will be used to search for relevant objects. If an empty string is passed in, the API will return results. Example: 'Greg'.
+            count (string): The number of results to return. The default is 20 if this parameter is omitted, with a minimum of 1 and a maximum of 100. If there are fewer results found than requested, all will be returned. Example: '20'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the search results.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved objects via a typeahead search algorithm.
+
         Tags:
-            typeahead, search, important
+            Typeahead
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -4687,24 +7145,25 @@ class AsanaApp(APIApplication):
 
     def get_multiple_users(self, opt_fields=None, workspace=None, team=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieves multiple user records from accessible workspaces and organizations with pagination options.
-        
+        Retrieves a list of users with optional filtering parameters and pagination support.
+
         Args:
-            limit: Results per page; must be between 1 and 100.
-            offset: Offset token for pagination; must be from a previous API response.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Provides ‘pretty’ output, with proper line breaking and indentation.
-            team: The team ID to filter users.
-            workspace: The workspace or organization ID to filter users.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'email,name,offset,path,photo,photo.image_1024x1024,photo.image_128x128,photo.image_21x21,photo.image_27x27,photo.image_36x36,photo.image_60x60,uri,workspaces,workspaces.name'.
+            workspace (string): The workspace or organization ID to filter users on. Example: '1331'.
+            team (string): The team ID to filter users on. Example: '15627'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing user records sorted by user ID.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully retrieved the requested user records.
+
         Tags:
-            users, pagination, async_job, management, important
+            Users
         """
         url = f"{self.base_url}/users"
         query_params = {k: v for k, v in [('opt_fields', opt_fields), ('workspace', workspace), ('team', team), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
@@ -4714,20 +7173,19 @@ class AsanaApp(APIApplication):
 
     def get_auser(self, user_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Get a user record by ID, returning the full user details. Supports optional field inclusion and formatted output.
-        
+        Retrieves details for a specific user using their unique identifier (user_gid) and offers optional query parameters for customizing the returned data fields (opt_fields) and response formatting (opt_pretty).
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include in the response (e.g., 'name,email'). Excludes some properties by default if not specified.
-            opt_pretty: Enables formatted output (e.g., line breaks, indentation) for readability. Recommended only for debugging due to performance impact.
-        
+            user_gid (string): user_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'email,name,photo,photo.image_1024x1024,photo.image_128x128,photo.image_21x21,photo.image_27x27,photo.image_36x36,photo.image_60x60,workspaces,workspaces.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the full user record, including all requested fields.
-        
-        Raises:
-            HTTPError: When the API request fails due to invalid user ID, network issues, or server errors.
-        
+            dict[str, Any]: Returns the user specified.
+
         Tags:
-            users, get, api, record, important
+            Users
         """
         if user_gid is None:
             raise ValueError("Missing required parameter 'user_gid'")
@@ -4739,24 +7197,26 @@ class AsanaApp(APIApplication):
 
     def get_auser_sfavorites(self, user_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None, resource_type=None, workspace=None) -> dict[str, Any]:
         """
-        Get a user's favorites in the specified workspace and resource type, returning paginated results in the same order as Asana's sidebar.
-        
+        Retrieves a list of favorites for a user with the specified `user_gid`, allowing optional filtering by resource type and workspace, and customizable output through additional query parameters.
+
         Args:
-            limit: Results per page. Must be between 1 and 100.
-            offset: Offset token for pagination. Use tokens returned from previous paginated requests.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Provides formatted output at the cost of performance. Recommended for debugging only.
-            resource_type: (Required) Type of resources to fetch favorites for.
-            workspace: (Required) Workspace ID containing the favorites.
-        
+            user_gid (string): user_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'name,offset,path,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            resource_type (string): (Required) The resource type of favorites to be returned. Example: 'project'.
+            workspace (string): (Required) The workspace in which to get favorites. Example: '1234'.
+
         Returns:
-            Dictionary containing paginated favorites data, typically including a 'data' array and pagination metadata.
-        
-        Raises:
-            HTTPError: Raised for invalid requests, authentication failures, or server errors (via response.raise_for_status())
-        
+            dict[str, Any]: Returns the specified user's favorites.
+
         Tags:
-            user, favorites, pagination, workspace, get, management, important
+            Users
         """
         if user_gid is None:
             raise ValueError("Missing required parameter 'user_gid'")
@@ -4768,21 +7228,22 @@ class AsanaApp(APIApplication):
 
     def get_users_in_ateam(self, team_gid, opt_fields=None, opt_pretty=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve paginated list of team members, returning compact user records sorted alphabetically with a limit of 2000 results. For larger datasets, use the `/users` endpoint.
-        
+        Retrieves a paginated list of users associated with a specified team, supporting optional fields, pretty formatting, and offset parameters.
+
         Args:
-            offset: Offset token for pagination. Requires a token from a prior paginated response to fetch subsequent pages. Omit to retrieve first page.
-            opt_fields: Comma-separated optional property list to include in response. Defaults return compact records.
-            opt_pretty: Enable formatted output for readability (increases processing time and response size). Recommended for debugging only.
-        
+            team_gid (string): team_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'email,name,photo,photo.image_1024x1024,photo.image_128x128,photo.image_21x21,photo.image_27x27,photo.image_36x36,photo.image_60x60,workspaces,workspaces.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing API response with user records and pagination metadata.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised for failed API responses (4XX/5XX status codes).
-        
+            dict[str, Any]: Returns the user records for all the members of the team, including guests and limited access users
+
         Tags:
-            users, retrieve, pagination, team-management, important
+            Users
         """
         if team_gid is None:
             raise ValueError("Missing required parameter 'team_gid'")
@@ -4794,21 +7255,22 @@ class AsanaApp(APIApplication):
 
     def get_users_in_aworkspace_or_organization(self, workspace_gid, opt_fields=None, opt_pretty=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve paginated list of users in a workspace or organization, sorted alphabetically and limited to 2000 records. For larger datasets, use the `/users` endpoint.
-        
+        Retrieves a list of users associated with the specified workspace, supporting optional fields, pagination, and response formatting.
+
         Args:
-            offset: Offset token for pagination. Use the token from a previous paginated response to fetch the next page. Omit to start from the first page.
-            opt_fields: Comma-separated list of optional properties to include in the response (excluded by default in compact resources).
-            opt_pretty: Format response with improved readability (increases processing time and response size). Recommended for debugging only.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'email,name,photo,photo.image_1024x1024,photo.image_128x128,photo.image_21x21,photo.image_27x27,photo.image_36x36,photo.image_60x60,workspaces,workspaces.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing compact user records and pagination metadata.
-        
-        Raises:
-            HTTPError: When API request fails due to network issues, invalid parameters, or server errors (handled via response.raise_for_status()).
-        
+            dict[str, Any]: Return the users in the specified workspace or org.
+
         Tags:
-            list, users, pagination, workspace, organization, management, important
+            Users
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -4820,20 +7282,19 @@ class AsanaApp(APIApplication):
 
     def get_auser_task_list(self, user_task_list_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieves the full record for a user task list. Optionally includes additional fields and formats the response for readability.
-        
+        Retrieves details of a user task list by its global ID, supporting optional query parameters for field selection and response formatting.
+
         Args:
-            opt_fields: A comma-separated list of optional properties to include in the response.
-            opt_pretty: Enables 'pretty' formatting for JSON responses, improving readability but potentially increasing response time.
-        
+            user_task_list_gid (string): user_task_list_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'name,owner,workspace'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the user task list data.
-        
-        Raises:
-            HTTPError: Raised by the response object if the HTTP request returns a status indicating an error.
-        
+            dict[str, Any]: Successfully retrieved the user task list.
+
         Tags:
-            list, management, user-task, important
+            User task lists
         """
         if user_task_list_gid is None:
             raise ValueError("Missing required parameter 'user_task_list_gid'")
@@ -4845,21 +7306,20 @@ class AsanaApp(APIApplication):
 
     def get_auser_stask_list(self, user_gid, opt_fields=None, opt_pretty=None, workspace=None) -> dict[str, Any]:
         """
-        Fetches a user's task list from a specified workspace.
-        
+        Retrieves a list of tasks for a user identified by the user_gid parameter, allowing optional filtering by additional fields or workspace.
+
         Args:
-            opt_fields: Optional fields to include in the response. Specify as a comma-separated list of properties.
-            opt_pretty: Whether to return the response in a readable 'pretty' format. Advisable for debugging.
-            workspace: The workspace from which to retrieve the task list.
-        
+            user_gid (string): user_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'name,owner,workspace'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            workspace (string): (Required) The workspace in which to get the user task list. Example: '1234'.
+
         Returns:
-            A dictionary containing the user's task list.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails.
-        
+            dict[str, Any]: Successfully retrieved the user's task list.
+
         Tags:
-            fetch, task-list, user-management, workspace, important
+            User task lists
         """
         if user_gid is None:
             raise ValueError("Missing required parameter 'user_gid'")
@@ -4871,24 +7331,25 @@ class AsanaApp(APIApplication):
 
     def get_multiple_webhooks(self, limit=None, offset=None, workspace=None, resource=None, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Get compact representations of all webhooks registered by the app for the authenticated user in a specific workspace.
-        
+        Retrieves a list of webhooks, allowing for optional filtering by workspace, resource, and additional fields, with pagination options via limit and offset parameters.
+
         Args:
-            limit: Results per page (1-100). Controls the number of objects to return per page.
-            offset: Offset token for pagination. Use the token from a prior paginated response to fetch subsequent pages. Omitting returns the first page.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Provides formatted output for readability, increasing response time and size (recommended for debugging only).
-            resource: Filters webhooks to only those associated with the specified resource.
-            workspace: (Required) Workspace identifier to query for registered webhooks.
-        
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+            workspace (string): (Required) The workspace to query for webhooks in. Example: '1331'.
+            resource (string): Only return webhooks for the given resource. Example: '51648'.
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'active,created_at,delivery_retry_count,failure_deletion_timestamp,filters,filters.action,filters.fields,filters.resource_subtype,last_failure_at,last_failure_content,last_success_at,next_attempt_after,offset,path,resource,resource.name,target,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing paginated webhook data in compact format, including metadata about the pagination state.
-        
-        Raises:
-            requests.HTTPError: Raised for invalid requests, including unauthorized workspace access, nonexistent resources, or server-side errors.
-        
+            dict[str, Any]: Successfully retrieved the requested webhooks.
+
         Tags:
-            get, webhooks, pagination, management, important
+            Webhooks
         """
         url = f"{self.base_url}/webhooks"
         query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('workspace', workspace), ('resource', resource), ('opt_fields', opt_fields), ('opt_pretty', opt_pretty)] if v is not None}
@@ -4898,21 +7359,50 @@ class AsanaApp(APIApplication):
 
     def establish_awebhook(self, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Initiates a webhook creation process with a confirmation handshake, requiring asynchronous server handling to validate the webhook subscription.
-        
+        Creates a new webhook subscription to receive event notifications and returns the subscription details.
+
         Args:
-            data: Dictionary containing webhook configuration details such as resource (the resource ID to monitor) and target (URL receiving webhook events).
-            opt_fields: Comma-separated string of optional fields to include in the response. Default excludes some properties.
-            opt_pretty: Boolean flag to enable formatted JSON output (increases response size and processing time).
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'active,created_at,delivery_retry_count,failure_deletion_timestamp,filters,filters.action,filters.fields,filters.resource_subtype,last_failure_at,last_failure_content,last_success_at,next_attempt_after,resource,resource.name,target'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "filters": [
+                      {
+                        "action": "changed",
+                        "fields": [
+                          "due_at",
+                          "due_on",
+                          "dependencies"
+                        ],
+                        "resource_subtype": "milestone",
+                        "resource_type": "task"
+                      },
+                      {
+                        "action": "changed",
+                        "fields": [
+                          "due_at",
+                          "due_on",
+                          "dependencies"
+                        ],
+                        "resource_subtype": "milestone",
+                        "resource_type": "task"
+                      }
+                    ],
+                    "resource": "12345",
+                    "target": "https://example.com/receive-webhook/7654?app_specific_param=app_specific_value"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing webhook metadata including gid, resource details, target URL, and activation status. Includes X-Hook-Secret header for future event verification.
-        
-        Raises:
-            requests.HTTPError: Raised for invalid hostnames (403 Forbidden), failed handshake validation, or API request failures.
-        
+            dict[str, Any]: Successfully created the requested webhook.
+
         Tags:
-            webhooks, async-handshake, important, api-integration
+            Webhooks
         """
         request_body = {
             'data': data,
@@ -4926,20 +7416,19 @@ class AsanaApp(APIApplication):
 
     def get_awebhook(self, webhook_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve the full record of a webhook including optional fields if specified.
-        
+        Retrieves information about a webhook with the specified ID using the "GET" method, allowing optional fields and pretty-print formatting.
+
         Args:
-            opt_fields: Comma-separated list of optional properties to include (excluded by default).
-            opt_pretty: Enables formatted JSON output for readability during debugging. Increases response size/processing time.
-        
+            webhook_gid (string): webhook_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'active,created_at,delivery_retry_count,failure_deletion_timestamp,filters,filters.action,filters.fields,filters.resource_subtype,last_failure_at,last_failure_content,last_success_at,next_attempt_after,resource,resource.name,target'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the complete webhook record with included fields.
-        
-        Raises:
-            HTTPError: If the API request fails due to network issues, authentication errors, or invalid parameters.
-        
+            dict[str, Any]: Successfully retrieved the requested webhook.
+
         Tags:
-            webhook, get, async_job, management, important
+            Webhooks
         """
         if webhook_gid is None:
             raise ValueError("Missing required parameter 'webhook_gid'")
@@ -4951,21 +7440,49 @@ class AsanaApp(APIApplication):
 
     def update_awebhook(self, webhook_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Update an existing webhook by making a PUT request and overwriting its filters with new data.
-        
+        Updates a webhook identified by its GID at the "/webhooks/{webhook_gid}" path, allowing modifications to existing webhook configurations.
+
         Args:
-            data: The data to be sent in the request body. It should include the updated filters for the webhook.
-            opt_fields: A comma-separated list of optional fields to be included in the response.
-            opt_pretty: A flag to provide the response in a pretty format, useful for debugging.
-        
+            webhook_gid (string): webhook_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'active,created_at,delivery_retry_count,failure_deletion_timestamp,filters,filters.action,filters.fields,filters.resource_subtype,last_failure_at,last_failure_content,last_success_at,next_attempt_after,resource,resource.name,target'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "filters": [
+                      {
+                        "action": "changed",
+                        "fields": [
+                          "due_at",
+                          "due_on",
+                          "dependencies"
+                        ],
+                        "resource_subtype": "milestone",
+                        "resource_type": "task"
+                      },
+                      {
+                        "action": "changed",
+                        "fields": [
+                          "due_at",
+                          "due_on",
+                          "dependencies"
+                        ],
+                        "resource_subtype": "milestone",
+                        "resource_type": "task"
+                      }
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary containing the updated webhook data.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            dict[str, Any]: Successfully updated the webhook.
+
         Tags:
-            update, webhook, important, http_request
+            Webhooks
         """
         if webhook_gid is None:
             raise ValueError("Missing required parameter 'webhook_gid'")
@@ -4981,19 +7498,18 @@ class AsanaApp(APIApplication):
 
     def delete_awebhook(self, webhook_gid, opt_pretty=None) -> dict[str, Any]:
         """
-        Permanently deletes a webhook. Once deleted, no further requests will be issued, though in-flight requests might still be received.
-        
+        Deletes a webhook identified by the `{webhook_gid}` and returns a status message, allowing for the removal of existing webhook configurations.
+
         Args:
-            opt_pretty: Provides 'pretty' output with proper formatting (line breaks, indentation) for readability. This increases response size and processing time - recommended only for debugging.
-        
+            webhook_gid (string): webhook_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            dict[str, Any]: Parsed JSON response containing the deletion result.
-        
-        Raises:
-            requests.HTTPError: Raised for HTTP request failures (4XX/5XX status codes).
-        
+            dict[str, Any]: Successfully retrieved the requested webhook.
+
         Tags:
-            delete, webhooks, api-management, important
+            Webhooks
         """
         if webhook_gid is None:
             raise ValueError("Missing required parameter 'webhook_gid'")
@@ -5005,22 +7521,23 @@ class AsanaApp(APIApplication):
 
     def get_multiple_workspaces(self, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Fetches multiple workspaces visible to the authorized user. Returns compact records with pagination support.
-        
+        Retrieves a paginated list of workspaces with optional filtering and formatting parameters.
+
         Args:
-            limit: Number of results per page. Must be between 1 and 100.
-            offset: Offset token for pagination. Use the value returned by a previous request.
-            opt_fields: Comma-separated list of optional properties to include.
-            opt_pretty: Provides response in a readable format, useful for debugging.
-        
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'email_domains,is_organization,name,offset,path,uri'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing workspace records.
-        
-        Raises:
-            HTTPError: Raised if the API request encounters any HTTP errors.
-        
+            dict[str, Any]: Return all workspaces visible to the authorized user.
+
         Tags:
-            list, workspaces, pagination, api-call, important
+            Workspaces
         """
         url = f"{self.base_url}/workspaces"
         query_params = {k: v for k, v in [('opt_fields', opt_fields), ('opt_pretty', opt_pretty), ('limit', limit), ('offset', offset)] if v is not None}
@@ -5030,20 +7547,19 @@ class AsanaApp(APIApplication):
 
     def get_aworkspace(self, workspace_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Get the full workspace record for a single workspace.
-        
+        Retrieves a specific workspace by its GID using the Asana API, optionally including additional fields and formatting options.
+
         Args:
-            opt_fields: Optional fields to include, specified as a comma-separated list. This endpoint returns a compact resource by default, excluding some properties.
-            opt_pretty: Enables pretty output, making the response more readable with proper line breaks and indentation.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'email_domains,is_organization,name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            A dictionary containing the full workspace record.
-        
-        Raises:
-            requests.RequestException: Raised if an HTTP request issue occurs, such as connection errors or invalid responses.
-        
+            dict[str, Any]: Return the full workspace record.
+
         Tags:
-            get, workspace, management, api-call, important
+            Workspaces
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -5055,21 +7571,30 @@ class AsanaApp(APIApplication):
 
     def update_aworkspace(self, workspace_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Updates an existing workspace by modifying specified fields and returns the updated workspace record.
-        
+        Updates a specified workspace's properties and returns the modified workspace data.
+
         Args:
-            data: Dictionary containing workspace data to update. Currently only the 'name' field is modifiable.
-            opt_fields: Comma-separated list of optional fields to include in the response.
-            opt_pretty: Enables formatted JSON output for debugging purposes, increasing response size and processing time.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'email_domains,is_organization,name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "gid": "12345",
+                    "name": "My Company Workspace",
+                    "resource_type": "task"
+                  }
+                }
+                ```
+
         Returns:
-            Complete updated workspace record as a dictionary.
-        
-        Raises:
-            HTTPError: Raised when the API request fails, such as invalid input data or server errors.
-        
+            dict[str, Any]: Update for the workspace was successful.
+
         Tags:
-            update, workspace, management, important, async-job
+            Workspaces
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -5085,21 +7610,28 @@ class AsanaApp(APIApplication):
 
     def add_auser_to_aworkspace_or_organization(self, workspace_gid, opt_fields=None, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Add a user to a workspace or organization by user ID or email and return the full user record.
-        
+        Adds a user to a specified workspace and returns the full user record upon successful completion.
+
         Args:
-            data: Dictionary containing user data. Required for the operation.
-            opt_fields: Optional query parameter to include additional properties in the response. Specify as a comma-separated list of properties.
-            opt_pretty: Return the response in a human-readable format.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'email,name,photo,photo.image_1024x1024,photo.image_128x128,photo.image_21x21,photo.image_27x27,photo.image_36x36,photo.image_60x60'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "user": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            A dictionary representing the full user record for the invited user.
-        
-        Raises:
-            RequestException: Raised if there is a problem with the HTTP request, such as network issues or server errors.
-        
+            dict[str, Any]: The user was added successfully to the workspace or organization.
+
         Tags:
-            add, management, user, important
+            Workspaces
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -5115,20 +7647,27 @@ class AsanaApp(APIApplication):
 
     def remove_auser_from_aworkspace_or_organization(self, workspace_gid, opt_pretty=None, data=None) -> dict[str, Any]:
         """
-        Remove a user from a workspace or organization. Requires admin privileges in the target workspace. Supports user identification by globally unique ID or email address.
-        
+        Removes a user from a workspace using the specified POST API operation at the "/workspaces/{workspace_gid}/removeUser" path.
+
         Args:
-            data: Dictionary containing user removal parameters (e.g., user identifiers and workspace details)
-            opt_pretty: Provides formatted response output. Recommended only for debugging due to performance impact
-        
+            workspace_gid (string): workspace_gid
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "user": "12345"
+                  }
+                }
+                ```
+
         Returns:
-            Empty dictionary confirming successful operation. Actual removal confirmation should be verified through status codes.
-        
-        Raises:
-            HTTPError: Raised for unsuccessful HTTP responses (4xx/5xx status codes) from the API endpoint
-        
+            dict[str, Any]: The user was removed successfully to the workspace or organization.
+
         Tags:
-            remove, user-management, workspaces, organizations, admin, important
+            Workspaces
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")
@@ -5144,20 +7683,19 @@ class AsanaApp(APIApplication):
 
     def get_aworkspace_membership(self, workspace_membership_gid, opt_fields=None, opt_pretty=None) -> dict[str, Any]:
         """
-        Retrieve a workspace membership and return its complete workspace record.
-        
+        Retrieves a specific workspace membership entry by its global identifier (GID) with optional field filtering and formatted output.
+
         Args:
-            opt_fields: Comma-separated list of optional fields to include in the response (excludes some properties by default without this parameter).
-            opt_pretty: Return formatted JSON with indentation and line breaks for readability (recommended only for debugging).
-        
+            workspace_membership_gid (string): workspace_membership_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,is_active,is_admin,is_guest,user,user.name,user_task_list,user_task_list.name,user_task_list.owner,user_task_list.workspace,vacation_dates,vacation_dates.end_on,vacation_dates.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+
         Returns:
-            Dictionary containing the full workspace membership record.
-        
-        Raises:
-            HTTPError: Raised if the API request fails (e.g., invalid permissions or workspace membership ID).
-        
+            dict[str, Any]: Successfully retrieved the requested workspace membership.
+
         Tags:
-            workspace, membership, get, management, important
+            Workspace memberships
         """
         if workspace_membership_gid is None:
             raise ValueError("Missing required parameter 'workspace_membership_gid'")
@@ -5169,22 +7707,24 @@ class AsanaApp(APIApplication):
 
     def get_workspace_memberships_for_auser(self, user_gid, opt_fields=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Fetches the compact workspace membership records for a user, allowing pagination via limit and offset parameters.
-        
+        Retrieves a list of workspace memberships for a specified user based on the provided query parameters, including optional fields, formatting preferences, and pagination settings.
+
         Args:
-            limit: Results per page; must be between 1 and 100.
-            offset: Offset token for pagination; must be returned by a previous request.
-            opt_fields: Comma-separated list of properties to include beyond the default compact resource.
-            opt_pretty: Enables 'pretty' output, typically for debugging purposes.
-        
+            user_gid (string): user_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,is_active,is_admin,is_guest,offset,path,uri,user,user.name,user_task_list,user_task_list.name,user_task_list.owner,user_task_list.workspace,vacation_dates,vacation_dates.end_on,vacation_dates.start_on,workspace,workspace.name'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            A dictionary containing the workspace membership records for the user.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request fails due to a status code in the 4xx or 5xx range.
-        
+            dict[str, Any]: Successfully retrieved the requested user's workspace memberships.
+
         Tags:
-            workspace, memberships, pagination, management, important
+            Workspace memberships
         """
         if user_gid is None:
             raise ValueError("Missing required parameter 'user_gid'")
@@ -5196,23 +7736,25 @@ class AsanaApp(APIApplication):
 
     def get_the_workspace_memberships_for_aworkspace(self, workspace_gid, opt_fields=None, user=None, opt_pretty=None, limit=None, offset=None) -> dict[str, Any]:
         """
-        Retrieve paginated workspace membership records for a specified workspace, including optional field selection and user filtering.
-        
+        Retrieves a list of workspace memberships for a specified workspace, providing details about users and their roles within the workspace, allowing for optional filtering and customization of the response.
+
         Args:
-            limit: Results per page (1-100). Controls pagination size.
-            offset: Pagination token from a previous response to fetch specific pages.
-            opt_fields: Comma-separated list of optional properties to include in the response.
-            opt_pretty: Format response with human-readable spacing/indentation (debugging use only).
-            user: User identifier ('me', email, or gid) for membership filtering.
-        
+            workspace_gid (string): workspace_gid
+            opt_fields (string): This endpoint returns a compact resource, which excludes some properties by default. To include those optional properties, set this query parameter to a comma-separated list of the properties you wish to include. Example: 'created_at,is_active,is_admin,is_guest,offset,path,uri,user,user.name,user_task_list,user_task_list.name,user_task_list.owner,user_task_list.workspace,vacation_dates,vacation_dates.end_on,vacation_dates.start_on,workspace,workspace.name'.
+            user (string): A string identifying a user. This can either be the string "me", an email, or the gid of a user. Example: 'me'.
+            opt_pretty (string): Provides “pretty” output.
+        Provides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging. Example: 'true'.
+            limit (string): Results per page.
+        The number of objects to return per page. The value must be between 1 and 100. Example: '50'.
+            offset (string): Offset token.
+        An offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.
+        *Note: You can only pass in an offset that was returned to you via a previously paginated request.* Example: 'eyJ0eXAiOJiKV1iQLCJhbGciOiJIUzI1NiJ9'.
+
         Returns:
-            Dictionary containing paginated workspace membership records with requested fields.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised for API response failures (4XX/5XX status codes).
-        
+            dict[str, Any]: Successfully retrieved the requested workspace's memberships.
+
         Tags:
-            workspace-memberships, pagination, filter, management, important
+            Workspace memberships
         """
         if workspace_gid is None:
             raise ValueError("Missing required parameter 'workspace_gid'")

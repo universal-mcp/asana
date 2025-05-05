@@ -9,191 +9,191 @@ This is automatically generated from OpenAPI schema for the Asana API.
 
 | Tool | Description |
 |------|-------------|
-| `get_an_allocation` | Retrieves a complete allocation record for a single allocation. |
-| `update_an_allocation` | Updates an existing allocation by making a PUT request. Only specified fields are updated, and the complete updated allocation record is returned. |
-| `delete_an_allocation` | Deletes a specific allocation by making a DELETE request to its URL and returns an empty data record upon success. |
-| `get_multiple_allocations` | Fetches a list of allocations filtered by specific parameters like project, user, and pagination details. |
-| `create_an_allocation` | Creates a new allocation and returns its full record. |
-| `get_an_attachment` | Get the full record for a single attachment, optionally including additional fields and pretty-printed output. |
-| `delete_an_attachment` | Deletes a specific, existing attachment and returns an empty data record. |
-| `get_attachments_from_an_object` | Retrieves a list of attachments from a specified object, which can be a project, project brief, or task. |
-| `get_audit_log_events` | Retrieve audit log events from your domain, with options to filter by various criteria such as actor ID, event type, and time range. |
-| `submit_parallel_requests` | Submits multiple API requests in parallel to Asana's batch endpoints, enabling efficient batch processing of operations. |
-| `create_acustom_field` | Creates a new custom field in a workspace with a unique name and valid type. |
-| `get_acustom_field` | Retrieve complete metadata definition of a custom field, including type-specific properties and behaviors. |
-| `update_acustom_field` | Updates an existing custom field with provided data, returning the complete updated record. Only specified fields are modified, preserving existing values. |
-| `delete_acustom_field` | Deletes a specific existing custom field using a DELETE request to its URL. Locked fields can only be deleted by the locking user. |
-| `get_aworkspace_scustom_fields` | Retrieves a list of compact representations of custom fields within a workspace. |
-| `create_an_enum_option` | Creates an enum option for a custom field, adds it to the field's enum list, and returns the full record of the new option. |
-| `reorder_acustom_field_senum` | Reorders a custom field's enum. Moves an enum option to be either before or after another specified enum option. |
-| `update_an_enum_option` | Updates an existing enum option for custom fields and returns the full record. Locked fields can only be updated by the locking user. |
-| `get_aproject_scustom_fields` | Fetches and returns a project's custom fields settings, allowing pagination and optional inclusion of additional fields. |
-| `get_aportfolio_scustom_fields` | Fetches a portfolio's custom fields from the API, returning them in a compact form. |
-| `get_events_on_aresource` | Retrieves a list of events that have occurred on a specified resource since the sync token was generated. |
-| `get_agoal` | Retrieves a complete goal record for a single goal, allowing optional fields and pretty output. |
-| `update_agoal` | Update an existing goal by sending a PUT request to the specified URL. Only provided fields are updated, leaving unspecified fields unchanged. |
-| `delete_agoal` | Deletes a specific existing goal by sending a DELETE request to the goal's URL. |
-| `get_goals` | Fetches compact goal records based on specified parameters. |
-| `create_agoal` | Creates a new goal in a workspace or team and returns the full record of the newly created goal. |
-| `create_agoal_metric` | Creates and adds a goal metric to a specified goal, replacing any existing metric. |
-| `update_agoal_metric` | Update a goal's existing metric's current value and return the updated metric record. |
-| `add_acollaborator_to_agoal` | Adds collaborators as followers to a goal and returns the updated goal data. |
-| `remove_acollaborator_from_agoal` | Removes a collaborator from a goal and returns the updated goal record. |
-| `get_parent_goals_from_agoal` | Retrieves parent goals from a specific goal, returning them in a compact format. |
-| `get_agoal_relationship` | Retrieve a complete goal relationship record by making a GET request to the specified endpoint. |
-| `update_agoal_relationship` | Updates an existing goal relationship by making a PUT request with specified data and returns the complete updated record. |
-| `get_goal_relationships` | Retrieve goal relationships from the API, returning compact goal relationship records with optional pagination and filtering. |
-| `add_asupporting_goal_relationship` | Creates a supporting goal relationship by adding a supporting resource to a specific goal and returns the new relationship record. |
-| `removes_asupporting_goal_relationship` | Removes a supporting goal relationship between a parent goal and its dependent goal based on provided data. |
-| `get_ajob_by_id` | Retrieve a job's full record by its ID. |
-| `get_multiple_memberships` | Retrieve multiple membership records for goals, projects, or portfolios, with pagination and filtering options. |
-| `create_amembership` | Creates a new membership in a goal or project for users or teams, returning the full membership record. |
-| `get_amembership` | Fetches a compact project membership record. |
-| `update_amembership` | Updates an existing membership by making a PUT request, modifying only the specified fields in the provided data. |
-| `delete_amembership` | Deletes a specific membership for a goal or project by sending a DELETE request to the appropriate endpoint. |
-| `create_an_organization_export_request` | Initiates an asynchronous export request for an Organization in Asana. |
-| `get_details_on_an_org_export_request` | Retrieve details of a previously-requested Organization export, including optional fields and formatted output. |
-| `get_multiple_portfolios` | Retrieve multiple portfolios, returning them in a compact representation. The portfolios are filtered by the specified workspace and can be further limited by owner, pagination parameters, and additional fields. |
-| `create_aportfolio` | Creates a portfolio in the specified workspace, allowing custom initialization without automatic UI state like Priority fields. |
-| `get_aportfolio` | Retrieves a portfolio record from the API, returning all fields unless filtered by optional parameters. |
-| `update_aportfolio` | Updates an existing portfolio by modifying specified fields while preserving unspecified ones, returning the complete updated portfolio record. |
-| `delete_aportfolio` | Deletes a portfolio by making a DELETE request. |
-| `get_portfolio_items` | Fetches a list of portfolio items in compact form, retrieving them based on pagination parameters. |
-| `add_aportfolio_item` | Adds an item to a portfolio and returns an empty data block. |
-| `remove_aportfolio_item` | Remove an item from a portfolio via API request and return the response data. |
-| `add_acustom_field_to_aportfolio` | Adds a custom field to a portfolio by creating a custom field setting. |
-| `remove_acustom_field_from_aportfolio` | Remove a custom field setting from a portfolio. |
-| `add_users_to_aportfolio` | Add users to a portfolio and return the updated portfolio record. |
-| `remove_users_from_aportfolio` | Remove users from a portfolio and return the updated portfolio record. |
-| `get_multiple_portfolio_memberships` | Retrieves multiple portfolio memberships, returning them in a compact representation. Requires specifying either `portfolio` and `user`, or `workspace` and `user`. Supports pagination and optional fields. |
-| `get_aportfolio_membership` | Retrieves a portfolio membership, returning the complete portfolio record. |
-| `get_memberships_from_aportfolio` | Get memberships from a portfolio, returning compact portfolio membership records. |
-| `get_multiple_projects` | Retrieve multiple projects based on filtering criteria, returning compact project records. Handles pagination and allows specifying optional fields to include. |
-| `create_aproject` | Create a new project in a workspace or team, returning its full record. |
-| `get_aproject` | Fetches a project's complete record, optionally including additional fields and formatting the output for readability. |
-| `update_aproject` | Updates a specific project by modifying provided fields, returning the complete updated project record while preserving unspecified fields. |
-| `delete_aproject` | Deletes an existing project by making a DELETE request to the project's URL. |
-| `duplicate_aproject` | Duplicates a project by creating and returning a job for asynchronous handling. |
-| `get_projects_atask_is_in` | Retrieve a compact list of all projects that contain the specified task, formatted as paginated results. |
-| `get_ateam_sprojects` | Fetches a team’s projects, returning compact project records with optional pagination, archival status filtering, and field inclusion control. |
-| `create_aproject_in_ateam` | Creates a project shared with the specified team and returns the full record of the newly created project. |
-| `get_all_projects_in_aworkspace` | Fetches all project records in a workspace, returning them as a dictionary. |
-| `create_aproject_in_aworkspace` | Create a project in a workspace, returning the full record of the newly created project. |
-| `add_acustom_field_to_aproject` | Add a custom field to a project, creating a custom field setting for the project. |
-| `remove_acustom_field_from_aproject` | Remove a custom field setting from a specified project by sending a POST request with the required data. |
-| `get_task_count_of_aproject` | Retrieves the task count of a project, returning an object with task count fields. All fields are excluded by default, requiring opt-in via the `opt_fields` parameter. |
-| `add_users_to_aproject` | Adds users to a project as members, potentially setting them as followers based on notification settings, and returns the updated project record. |
-| `remove_users_from_aproject` | Removes specified users from a project and returns the updated project record. |
-| `add_followers_to_aproject` | Adds followers to a project, promoting specified users to members if not already part of the project. Returns the updated project record. |
-| `remove_followers_from_aproject` | Remove followers from a project without affecting membership status. |
-| `create_aproject_template_from_aproject` | Creates a project template from a project by sending a POST request and returns the response in JSON format, asynchronously handling the template creation. |
-| `get_aproject_brief` | Retrieves a project brief by optionally including specified fields and formatting the response. |
-| `update_aproject_brief` | Updates an existing project brief by making a PUT request and returns the complete updated record. |
-| `delete_aproject_brief` | Failed to extract docstring information |
-| `create_aproject_brief` | Creates a new project brief and returns the full record of the newly created brief. |
-| `get_aproject_membership` | Retrieve a project membership and its associated project record. |
-| `get_memberships_from_aproject` | Retrieves paginated project membership records for a specific project, returning compact data with optional fields. |
-| `get_aproject_status` | Get the complete record for a single project status update. *Deprecated: new integrations should prefer the `/status_updates/{status_gid}` route.* |
-| `delete_aproject_status` | Deletes a specific existing project status update (deprecated: new integrations should use '/status_updates/{status_gid}'). |
-| `get_statuses_from_aproject` | Retrieve compact project status update records from a project, providing pagination and query parameters. |
-| `create_aproject_status` | Creates a new project status update (deprecated). |
-| `get_aproject_template` | Retrieves the complete record for a single project template including optionally specified fields. |
-| `delete_aproject_template` | Delete a project template from the system and return an empty data record. |
-| `get_multiple_project_templates` | Retrieves multiple project templates based on specified filters like team and workspace. |
-| `get_ateam_sproject_templates` | Retrieve paginated list of compact project template records for a team. |
-| `instantiate_aproject_from_aproject_template` | Instantiates a project from a project template and returns an asynchronous job handle for the operation. |
-| `trigger_arule` | Triggers a rule configured with an incoming web request trigger, sending provided data to the rule's endpoint. |
-| `get_asection` | Retrieves a complete record for a single section, potentially including additional fields and optional formatting. |
-| `update_asection` | Updates an existing section by making a PUT request to the specific section URL, updating only the provided fields. |
-| `delete_asection` | Deletes a specific empty section by sending a DELETE request to its URL. The last remaining section cannot be deleted. |
-| `get_sections_in_aproject` | Retrieve sections in a project, returning compact records. |
-| `create_asection_in_aproject` | Creates a new section in a project and returns the full record of the newly created section. |
-| `add_task_to_section` | Adds a task to a specific section in a project, removing it from other sections. Inserts the task at the top of the section unless position parameters are provided (insert_before/insert_after). Does not work for separator tasks (resource_subtype 'section'). |
-| `move_or_insert_sections` | Move or insert sections by sending a POST request with provided data and optional 'pretty' formatting. |
-| `get_astatus_update` | Get a status update by requesting a complete record from an endpoint. The response may include optional fields based on query parameters. |
-| `delete_astatus_update` | Deletes a specific existing status update and returns an empty data record upon success. |
-| `get_status_updates_from_an_object` | Fetches status updates from a specified object, returning compact status records. |
-| `create_astatus_update` | Create a status update on an object and return the full record of the newly created status update. |
-| `get_astory` | Retrieves a story's full record, returning all data fields except those excluded by default. Optional parameters allow expanding specific fields and formatting the response. |
-| `update_astory` | Updates a story and returns the full record of the updated story. Only comment stories can have their text updated, and only comment/attachment stories can be pinned. Exactly one of `text` or `html_text` must be specified when updating a comment story. |
-| `delete_astory` | Deletes a story created by the user. |
-| `get_stories_from_atask` | Retrieve paginated stories associated with a task, returning compact records in a dictionary format. |
-| `create_astory_on_atask` | Creates a comment story on a task as the authenticated user, returning the new story's full record. |
-| `get_multiple_tags` | Retrieve multiple tags with optional pagination and filtering. Returns compact tag records based on provided query parameters. |
-| `create_atag` | Create a new tag in a specific workspace or organization. |
-| `get_atag` | Retrieve a single tag with optional properties and formatted output. |
-| `update_atag` | Updates a tag's properties by sending a PUT request with specified optional fields. Only provided fields are modified; unspecified fields remain unchanged. |
-| `delete_atag` | Deletes a specific, existing tag by making a DELETE request to the tag's URL. |
-| `get_atask_stags` | Fetches a task's tags, returning a compact representation of all associated tags. |
-| `get_tags_in_aworkspace` | Retrieve paginated tags from a workspace with optional filters and response formatting. |
-| `create_atag_in_aworkspace` | Creates a new tag in a workspace or organization and returns its full record. |
-| `get_multiple_tasks` | Retrieve multiple task records filtered by parameters such as assignee, project, or workspace. |
-| `create_atask` | Creates a new task in a workspace, either explicitly specified or inferred from projects/parent task associations. |
-| `get_atask` | Retrieve complete task record for a single task, including optional fields and formatted output. |
-| `update_atask` | Updates a specific, existing task by making a PUT request. Only the fields provided in the `data` block are updated. |
-| `delete_atask` | Deletes a specific task permanently after moving it to the user's trash (recoverable for 30 days). Returns an empty data record upon success. |
-| `duplicate_atask` | Duplicates a task by creating and returning a job that asynchronously handles the duplication. |
-| `get_tasks_from_aproject` | Get tasks from a project, returning compact task records ordered by their priority within the project. |
-| `get_tasks_from_asection` | Retrieves tasks from a specified section, primarily designed for board views. Filters can include completion status, pagination limits, and optional field requests. |
-| `get_tasks_from_atag` | Retrieve paginated tasks associated with a specific tag. Returns compact task records with optional field inclusion and formatted output. |
-| `get_tasks_from_auser_task_list` | Retrieves tasks from a user's My Tasks list, returning a compact list of tasks with optional filtering and pagination. |
-| `get_subtasks_from_atask` | Retrieve subtasks from a task, returning a compact representation of all task subtasks. |
-| `create_asubtask` | Creates a new subtask and adds it to the parent task, returning the full record for the newly created subtask. |
-| `set_the_parent_of_atask` | Sets the parent of a task, providing optional parameters for specifying additional fields and formatting the response. |
-| `get_dependencies_from_atask` | Retrieve paginated dependencies of a task with optional filtering and formatting. |
-| `set_dependencies_for_atask` | Set dependencies for a task by marking other tasks as its dependencies, up to a combined limit of 30 dependents and dependencies. |
-| `unlink_dependencies_from_atask` | Unlink dependencies from a task by sending a request to the specified API endpoint. |
-| `get_dependents_from_atask` | Retrieve the compact representations of all dependents of a task, optionally specifying pagination and optional fields. |
-| `set_dependents_for_atask` | Sets dependents for a task by marking a set of tasks as dependents if they are not already. |
-| `unlink_dependents_from_atask` | Unlinks dependent tasks from the current task via an API request. |
-| `add_aproject_to_atask` | Associates a task with a project, optionally positioning it relative to other tasks or within a specific section. Returns the API response data. |
-| `remove_aproject_from_atask` | Remove a project from a task, ensuring the task remains in the system but is no longer associated with the specified project. |
-| `add_atag_to_atask` | Adds a tag to a task and returns the result in JSON format. |
-| `remove_atag_from_atask` | Remove a tag from a task by sending a POST request with the task data. |
-| `add_followers_to_atask` | Adds followers to a task, returning the updated task record. |
-| `remove_followers_from_atask` | Remove specified followers from a task and return the updated task record. |
-| `get_atask_for_agiven_custom_id` | Fetches a task associated with a given custom ID. |
-| `search_tasks_in_aworkspace` | Searches for tasks in a workspace with extensive filtering capabilities based on task attributes, user interactions, dates, and custom parameters. |
-| `get_multiple_task_templates` | Retrieve multiple task templates with pagination and filtering options. Returns compact records of task templates filtered by specified criteria, requiring a project parameter for filtering. |
-| `get_atask_template` | Retrieves a complete task template record. |
-| `delete_atask_template` | Deletes a specific task template by making a DELETE request and returns an empty data record. |
-| `instantiate_atask_from_atask_template` | Instantiate a task from a task template, creating and returning a job to handle the task asynchronously. |
-| `create_ateam` | Creates a team within the current workspace. |
-| `get_ateam` | Retrieve detailed information about a team, including optional fields and formatted output as specified. |
-| `update_ateam` | Update a team within the current workspace, including modifying team data and requesting optional fields in the response. |
-| `get_teams_in_aworkspace` | Retrieve paginated records of teams in a workspace visible to the authorized user. |
-| `get_teams_for_auser` | Retrieve paginated list of compact team records for a user based on workspace/organization filter. |
-| `add_auser_to_ateam` | Adds a user to a team and returns the complete team membership record. Requires the calling user to be a team member and the added user to exist in the same organization. |
-| `remove_auser_from_ateam` | Remove a user from a team, requiring team membership in the calling user. |
-| `get_ateam_membership` | Get a team membership record. Returns the complete membership details for a single team. |
-| `get_team_memberships` | Retrieve team membership records with pagination and optional field filtering. |
-| `get_memberships_from_ateam` | Retrieve paginated team memberships with optional field inclusion and response formatting. |
-| `get_memberships_from_auser` | Retrieves memberships for a user, returning compact team membership records. |
-| `get_atime_period` | Retrieves a specific time period record with optional field inclusions and formatted output. |
-| `get_time_periods` | Retrieve compact time period records based on specified date range and pagination parameters. |
-| `get_time_tracking_entries_for_atask` | Retrieve paginated time tracking entries for a specific task. |
-| `create_atime_tracking_entry` | Create a new time tracking entry for a given task. |
-| `get_atime_tracking_entry` | Retrieves a complete time tracking entry record from the API, returning all available data in dictionary format. |
-| `update_atime_tracking_entry` | Updates an existing time tracking entry by sending a PUT request with the specified fields. |
-| `delete_atime_tracking_entry` | Delete a specific time tracking entry via DELETE request to its URL. |
-| `get_objects_via_typeahead` | Retrieves objects from a workspace using a typeahead search algorithm, providing a limited set of results quickly for auto-completion features. |
-| `get_multiple_users` | Retrieves multiple user records from accessible workspaces and organizations with pagination options. |
-| `get_auser` | Get a user record by ID, returning the full user details. Supports optional field inclusion and formatted output. |
-| `get_auser_sfavorites` | Get a user's favorites in the specified workspace and resource type, returning paginated results in the same order as Asana's sidebar. |
-| `get_users_in_ateam` | Retrieve paginated list of team members, returning compact user records sorted alphabetically with a limit of 2000 results. For larger datasets, use the `/users` endpoint. |
-| `get_users_in_aworkspace_or_organization` | Retrieve paginated list of users in a workspace or organization, sorted alphabetically and limited to 2000 records. For larger datasets, use the `/users` endpoint. |
-| `get_auser_task_list` | Retrieves the full record for a user task list. Optionally includes additional fields and formats the response for readability. |
-| `get_auser_stask_list` | Fetches a user's task list from a specified workspace. |
-| `get_multiple_webhooks` | Get compact representations of all webhooks registered by the app for the authenticated user in a specific workspace. |
-| `establish_awebhook` | Initiates a webhook creation process with a confirmation handshake, requiring asynchronous server handling to validate the webhook subscription. |
-| `get_awebhook` | Retrieve the full record of a webhook including optional fields if specified. |
-| `update_awebhook` | Update an existing webhook by making a PUT request and overwriting its filters with new data. |
-| `delete_awebhook` | Permanently deletes a webhook. Once deleted, no further requests will be issued, though in-flight requests might still be received. |
-| `get_multiple_workspaces` | Fetches multiple workspaces visible to the authorized user. Returns compact records with pagination support. |
-| `get_aworkspace` | Get the full workspace record for a single workspace. |
-| `update_aworkspace` | Updates an existing workspace by modifying specified fields and returns the updated workspace record. |
-| `add_auser_to_aworkspace_or_organization` | Add a user to a workspace or organization by user ID or email and return the full user record. |
-| `remove_auser_from_aworkspace_or_organization` | Remove a user from a workspace or organization. Requires admin privileges in the target workspace. Supports user identification by globally unique ID or email address. |
-| `get_aworkspace_membership` | Retrieve a workspace membership and return its complete workspace record. |
-| `get_workspace_memberships_for_auser` | Fetches the compact workspace membership records for a user, allowing pagination via limit and offset parameters. |
-| `get_the_workspace_memberships_for_aworkspace` | Retrieve paginated workspace membership records for a specified workspace, including optional field selection and user filtering. |
+| `get_an_allocation` | Retrieves details about an allocation by its GUID using the API endpoint "/allocations/{allocation_gid}" with optional fields and formatting controlled by query parameters "opt_fields" and "opt_pretty". |
+| `update_an_allocation` | Updates or creates a resource identified by the allocation GID at the "/allocations/{allocation_gid}" path using the PUT method. |
+| `delete_an_allocation` | Deletes the specified allocation by its global identifier and returns a status code indicating success or failure. |
+| `get_multiple_allocations` | Retrieves a list of resource allocations filtered by parent, assignee, workspace, and pagination parameters. |
+| `create_an_allocation` | Creates a new allocation using the API and returns a successful response upon completion, with optional fields and pretty printing available through query parameters. |
+| `get_an_attachment` | Retrieves details for a specific attachment using its identifier, with optional fields and pretty-printed responses. |
+| `delete_an_attachment` | Deletes an attachment identified by the attachment GID using the DELETE method. |
+| `get_attachments_from_an_object` | Retrieves a list of attachments using the "GET" method at the "/attachments" endpoint, allowing optional filtering by limit, offset, parent, and additional fields for custom output. |
+| `get_audit_log_events` | Retrieves a list of audit log events for a specified workspace, allowing filtering by time range, event type, actor type, and other parameters. |
+| `submit_parallel_requests` | Processes a batch of API requests in a single call, allowing for efficient execution of multiple operations defined at the "/batch" path using the "POST" method. |
+| `create_acustom_field` | Creates a new custom field at the "/custom_fields" endpoint using the "POST" method, allowing for optional parameters to specify additional fields or formatting options. |
+| `get_acustom_field` | Retrieves the details of a specific custom field using its unique identifier and supports optional query parameters for additional field data and formatted output. |
+| `update_acustom_field` | Updates the specified custom field's configuration for the given object (e.g., project) and returns the modified resource. |
+| `delete_acustom_field` | Deletes a specific custom field by its globally unique identifier (GID) and returns an empty response upon success. |
+| `get_aworkspace_scustom_fields` | Retrieves a list of custom fields for a specified workspace using the Asana API, allowing for optional filtering and formatting of the response. |
+| `create_an_enum_option` | Creates a new enum option for a custom field and allows specifying its position relative to existing options. |
+| `reorder_acustom_field_senum` | Reorders the enum options for a custom field using the Asana API by inserting an enum option at a specified position, allowing customization of the options' order. |
+| `update_an_enum_option` | Updates an existing enum option's details in the custom field and returns the modified enum option. |
+| `get_aproject_scustom_fields` | Retrieves custom field settings for a project using a specified project GID, allowing for optional filtering by fields, formatting, and pagination. |
+| `get_aportfolio_scustom_fields` | Retrieves custom field settings for a portfolio using the "GET" method, allowing for optional parameters to customize the output. |
+| `get_events_on_aresource` | Retrieves a list of events using the "GET" method at the "/events" endpoint, allowing optional filtering by fields, resource, synchronization status, and output format. |
+| `get_agoal` | Retrieves information about a specific goal using the `GET` method at the path `/goals/{goal_gid}`, allowing optional parameters for customizing output fields and formatting. |
+| `update_agoal` | Updates a specific goal identified by its GID using the PUT method at the path "/goals/{goal_gid}", optionally including query parameters for custom fields and formatting. |
+| `delete_agoal` | Deletes a specific goal resource identified by the `goal_gid` at the path "/goals/{goal_gid}" using the HTTP DELETE method. |
+| `get_goals` | Retrieves a list of goals using the GET method at the "/goals" endpoint, allowing filtering by parameters such as portfolio, project, task, team, workspace, and time periods. |
+| `create_agoal` | Creates a new goal in the system and returns the created resource. |
+| `create_agoal_metric` | Sets a metric for a specific goal identified by `{goal_gid}` and returns the updated goal data. |
+| `update_agoal_metric` | Sets the current metric value for a specified goal using the "POST" method at the "/goals/{goal_gid}/setMetricCurrentValue" endpoint. |
+| `add_acollaborator_to_agoal` | Adds followers to a specific goal using the "POST" method at the "/goals/{goal_gid}/addFollowers" endpoint and returns a status message based on the operation's success or failure. |
+| `remove_acollaborator_from_agoal` | Removes followers from a specified goal using the POST method at the "/goals/{goal_gid}/removeFollowers" path. |
+| `get_parent_goals_from_agoal` | Retrieves parent goals associated with a specific goal identified by its goal_gid. |
+| `get_agoal_relationship` | Retrieves a goal relationship object by its GID, optionally including additional fields in the response, using the Asana API. |
+| `update_agoal_relationship` | Updates a goal relationship using the Asana API and returns a response indicating the outcome of the operation. |
+| `get_goal_relationships` | Retrieves compact goal relationship objects between goals, projects, or portfolios with optional filtering and field selection. |
+| `add_asupporting_goal_relationship` | Adds a supporting relationship to a specified goal using the POST method at the "/goals/{goal_gid}/addSupportingRelationship" endpoint. |
+| `removes_asupporting_goal_relationship` | Removes the supporting relationship from a specified goal and returns a status message. |
+| `get_ajob_by_id` | Retrieves job details using the specified job GID, with optional fields and formatting controls, via a GET request to the "/jobs/{job_gid}" endpoint. |
+| `get_multiple_memberships` | Retrieves paginated membership records with optional parent, member, and field selection parameters. |
+| `create_amembership` | Creates a new membership by sending a POST request to the "/memberships" endpoint, potentially returning a newly created membership resource with a status code indicating successful creation. |
+| `get_amembership` | Retrieves membership details for a specified membership ID, supporting optional field selection and formatted responses. |
+| `update_amembership` | Updates an existing membership identified by `{membership_gid}` using the PUT method. |
+| `delete_amembership` | Deletes a membership by its GUID using the API, removing the associated relationship between entities. |
+| `create_an_organization_export_request` | Initiates a request to export an organization's complete data in JSON format, returning a status response upon successful creation. |
+| `get_details_on_an_org_export_request` | Retrieves information about an organization export using the provided GID, allowing optional specification of additional fields and pretty-print formatting. |
+| `get_multiple_portfolios` | Retrieves a list of portfolios with optional filtering and field selection parameters. |
+| `create_aportfolio` | Creates a new portfolio and returns the result, optionally including specified fields and formatted output, using the Portfolio API. |
+| `get_aportfolio` | Retrieves details about a specific portfolio identified by `{portfolio_gid}` using the `GET` method, allowing optional fields (`opt_fields`) and pretty formatting (`opt_pretty`) in the query parameters. |
+| `update_aportfolio` | Replaces the entire portfolio resource with the provided data and returns the updated portfolio. |
+| `delete_aportfolio` | Deletes the specified portfolio and returns a success status or error code. |
+| `get_portfolio_items` | Retrieves a list of items associated with a specified portfolio using a GET request, allowing for optional parameters to customize the response fields and pagination. |
+| `add_aportfolio_item` | Adds an item to a specified portfolio using a POST request, requiring item placement parameters. |
+| `remove_aportfolio_item` | Removes an item from a portfolio using the provided path "/portfolios/{portfolio_gid}/removeItem" via a POST request. |
+| `add_acustom_field_to_aportfolio` | Adds a custom field to a specified portfolio by creating a custom field setting using the Asana API. |
+| `remove_acustom_field_from_aportfolio` | Removes a custom field setting from a portfolio and returns a success status. |
+| `add_users_to_aportfolio` | Adds specified users as members to a portfolio and returns the updated portfolio record. |
+| `remove_users_from_aportfolio` | Removes members from a portfolio using the specified portfolio ID and returns a status message. |
+| `get_multiple_portfolio_memberships` | Retrieves portfolio membership details in Asana, including associated users and workspaces, with optional filtering and output field selection. |
+| `get_aportfolio_membership` | Retrieves details about a portfolio membership by its GID, optionally including additional fields and formatted output. |
+| `get_memberships_from_aportfolio` | Retrieves a list of portfolio memberships for a specific portfolio identified by its GID, allowing for optional filtering by user and customizing the response with additional fields. |
+| `get_multiple_projects` | Retrieves a list of projects using the specified parameters such as limit, offset, workspace, team, archived status, optional fields, and formatting options. |
+| `create_aproject` | Creates a new GitLab project with customizable fields and returns a success status upon completion. |
+| `get_aproject` | Retrieves a specific project's details using its unique identifier (project_gid) with options to customize the response fields and formatting. |
+| `update_aproject` | Updates an existing project at the specified path, replacing its entire resource with the provided request content, using the PUT method. |
+| `delete_aproject` | Deletes a project identified by the project GID using the DELETE method at the path "/projects/{project_gid}", with optional support for pretty-printed output. |
+| `duplicate_aproject` | Creates a duplicate of the specified project, including its structure and dependencies, while allowing optional field customization. |
+| `get_projects_atask_is_in` | Retrieves the projects associated with a specific task using the GET method, allowing for optional customization of output fields and pagination. |
+| `get_ateam_sprojects` | Retrieves a paginated list of projects associated with a specific team, supporting optional filtering for archived status and custom field selection. |
+| `create_aproject_in_ateam` | Adds a project to a team using the GitHub API and returns a success status. |
+| `get_all_projects_in_aworkspace` | Retrieves a list of projects for a specified workspace, allowing customization through parameters such as limit, offset, archived status, and optional fields, using the GET method. |
+| `create_aproject_in_aworkspace` | Creates a new project within the specified workspace using optional query parameters to control response fields and formatting. |
+| `add_acustom_field_to_aproject` | Adds a custom field setting to a specified project using the POST method via the API endpoint "/projects/{project_gid}/addCustomFieldSetting", allowing optional query parameters for field selection and response formatting. |
+| `remove_acustom_field_from_aproject` | Removes a custom field setting from a specified project using the Asana API by sending a POST request to the "/projects/{project_gid}/removeCustomFieldSetting" endpoint. |
+| `get_task_count_of_aproject` | Retrieves task counts for a specified project using the Asana API, allowing users to obtain an object containing task count fields by opting in with the `opt_fields` parameter. |
+| `add_users_to_aproject` | Adds members to a project specified by its project GID using the POST method. |
+| `remove_users_from_aproject` | Removes specified members from a project using their identifiers and returns an updated project object or error status. |
+| `add_followers_to_aproject` | Adds specified users as followers to a project and returns a success or error status. |
+| `remove_followers_from_aproject` | Removes specified followers from a project identified by its GID, updating the project's record without affecting its membership status. |
+| `create_aproject_template_from_aproject` | Saves a project as a template using the POST method at "/projects/{project_gid}/saveAsTemplate," allowing for the creation of new projects with predefined structures based on existing projects. |
+| `get_aproject_brief` | Retrieves a specific project brief identified by its unique identifier and returns its details, optionally including additional fields or formatted responses. |
+| `update_aproject_brief` | Updates or replaces a project brief with the specified ID and returns the modified resource. |
+| `delete_aproject_brief` | Deletes a specific project brief identified by its GID using the Asana API and returns an empty data record upon successful deletion. |
+| `create_aproject_brief` | Creates a project brief for the specified project using the provided data and returns the newly created brief. |
+| `get_aproject_membership` | Retrieves details of a specific project membership by its ID, including optional fields and formatted output. |
+| `get_memberships_from_aproject` | Retrieves a list of project memberships with optional query parameters for filtering and pagination. |
+| `get_aproject_status` | Retrieves a specific project status by its GID using the "GET" method, allowing for optional fields and pretty-printing. |
+| `delete_aproject_status` | Deletes a specific project status by its GID and returns an empty response upon success. |
+| `get_statuses_from_aproject` | Retrieves a list of project statuses for a specified project and returns paginated results with optional field filtering. |
+| `create_aproject_status` | Creates a new project status for the specified project and returns the created status, supporting optional field selection and pretty-printed responses. |
+| `get_aproject_template` | Retrieves a specific project template by its unique identifier, providing configurable output fields and formatted responses. |
+| `delete_aproject_template` | Deletes an existing project template using the Asana API and returns an empty data record. |
+| `get_multiple_project_templates` | Retrieves a list of project templates, optionally filtered by workspace or team, with support for pagination and field selection. |
+| `get_ateam_sproject_templates` | Retrieves a paginated list of project templates associated with a specific team, supporting optional filtering and field customization. |
+| `instantiate_aproject_from_aproject_template` | Instantiates a project template using the Asana API, creating a new project based on the specified template and optionally including additional fields and formatting options. |
+| `trigger_arule` | Triggers the execution of a specific rule using the API defined at the path "/rule_triggers/{rule_trigger_gid}/run" via a POST request. |
+| `get_asection` | Retrieves information about a specific section using the "GET" method at the "/sections/{section_gid}" endpoint, optionally allowing customization with additional fields and pretty-printing. |
+| `update_asection` | Updates or replaces a specific section resource identified by its GID, returning relevant status messages based on success or failure, with optional parameters for customizing output fields and formatting. |
+| `delete_asection` | Deletes the specified section identified by its global ID and returns a success or error status. |
+| `get_sections_in_aproject` | Retrieves a list of sections associated with a specific project, supporting optional query parameters for pagination and field customization. |
+| `create_asection_in_aproject` | Creates a new section in a specified project using the Asana API and returns a status message. |
+| `add_task_to_section` | Adds a task to the specified section using the POST method. |
+| `move_or_insert_sections` | Inserts a new section into a specific project and returns the operation's status. |
+| `get_astatus_update` | Retrieves a specific status update's details and associated metadata based on the provided status update identifier. |
+| `delete_astatus_update` | Deletes a specific status update identified by its GID and returns a response based on the operation's success or failure. |
+| `get_status_updates_from_an_object` | Retrieves status updates with filtering options for parent, creation date, and other parameters, returning paginated results. |
+| `create_astatus_update` | Creates a status update with optional fields, pagination controls, and returns success or error responses based on provided parameters. |
+| `get_astory` | Retrieves a specific story by its globally unique identifier (GID) with optional fields and formatting parameters. |
+| `update_astory` | Updates or creates a story at the specified path "/stories/{story_gid}" using the provided data. |
+| `delete_astory` | Deletes a specific story identified by its story GID from the collection of stories. |
+| `get_stories_from_atask` | Retrieves the stories associated with a specific task using the task's unique identifier and supports optional query parameters for pagination and field selection. |
+| `create_astory_on_atask` | Creates a story for a specific task using the "POST" method at the "/tasks/{task_gid}/stories" endpoint, allowing for optional fields and formatting through query parameters. |
+| `get_multiple_tags` | Retrieves a list of tags using the "GET" method at the "/tags" endpoint, allowing customization with parameters for limit, offset, workspace, optional fields, and pretty formatting. |
+| `create_atag` | Creates a new tag entry with optional fields and formatted response. |
+| `get_atag` | Retrieves information about a specific tag, identified by its GID, using the "GET" method at the path "/tags/{tag_gid}" with optional formatting and field selection. |
+| `update_atag` | Updates or replaces a Git tag with the specified GID and returns the operation status. |
+| `delete_atag` | Deletes a specific tag from a repository using the API and returns relevant status messages, depending on the outcome of the deletion operation. |
+| `get_atask_stags` | Retrieves the tags associated with a specific task using the task's unique identifier and supports optional filtering/pagination through query parameters. |
+| `get_tags_in_aworkspace` | Retrieves a list of tags associated with a specific workspace, with options to limit the response size and customize the output fields. |
+| `create_atag_in_aworkspace` | Adds tags to a specified workspace using a POST request to the "/workspaces/{workspace_gid}/tags" endpoint. |
+| `get_multiple_tasks` | Retrieves a list of tasks based on specified query parameters such as assignee, project, and completion status, using the GET method at the "/tasks" endpoint. |
+| `create_atask` | Creates a new task using the API and returns a status message, allowing optional fields and pretty-printing configurations through query parameters. |
+| `get_atask` | Retrieves task details using the Asana API and returns information about the specified task, with optional fields and formatting available through query parameters. |
+| `update_atask` | Updates an existing task specified by its ID using the PUT method, allowing for a complete replacement of the task resource. |
+| `delete_atask` | Deletes the specified task identified by the task_gid and returns an appropriate HTTP status code. |
+| `duplicate_atask` | Duplicates a task using the Asana API and returns a job ID, requiring a subsequent update call to modify the new task's properties. |
+| `get_tasks_from_aproject` | Retrieves a list of tasks associated with a specific project, supporting optional filtering and pagination parameters. |
+| `get_tasks_from_asection` | Retrieves a list of tasks within a specified section using the Asana API and returns the data based on optional query parameters such as fields, formatting, limit, offset, and completion status. |
+| `get_tasks_from_atag` | Retrieves a list of tasks associated with a specific tag, allowing for optional filtering by fields, formatting, and pagination using query parameters. |
+| `get_tasks_from_auser_task_list` | Retrieves a list of tasks associated with a specific user task list, allowing optional filtering by completion status, custom fields, and pagination limits. |
+| `get_subtasks_from_atask` | Retrieves a list of subtasks for a specified task using the GET method, allowing optional parameters for customizing the response. |
+| `create_asubtask` | Creates a new subtask for the specified parent task and returns the created subtask details. |
+| `set_the_parent_of_atask` | Changes the parent task of a specified task by submitting a POST request to the "/tasks/{task_gid}/setParent" endpoint. |
+| `get_dependencies_from_atask` | Retrieves a list of dependencies for a task with the specified task GID, allowing customization with optional fields, pretty formatting, and pagination limits. |
+| `set_dependencies_for_atask` | Adds dependencies to a task using the task's GID and returns a status message, with optional pretty formatting. |
+| `unlink_dependencies_from_atask` | Removes dependencies from a task using the "POST" method at the "/tasks/{task_gid}/removeDependencies" path. |
+| `get_dependents_from_atask` | Retrieves a list of dependent tasks for a specified task using the GET method at "/tasks/{task_gid}/dependents," allowing for optional filtering with parameters such as `opt_fields`, `opt_pretty`, `limit`, and `offset`. |
+| `set_dependents_for_atask` | Adds dependent tasks to a specified task using the POST method. |
+| `unlink_dependents_from_atask` | Removes dependent tasks from the specified task using the POST method. |
+| `add_aproject_to_atask` | Adds a project to a specific task using the "POST" method at the path "/tasks/{task_gid}/addProject". |
+| `remove_aproject_from_atask` | Removes the specified project from a task while retaining the task in the system. |
+| `add_atag_to_atask` | Adds a tag to a specified task in the system using the provided task identifier and returns a status message. |
+| `remove_atag_from_atask` | Removes a tag from a task with the specified identifier using the "POST" method and returns a status message. |
+| `add_followers_to_atask` | Adds followers to a specific task identified by its GID using the POST method, allowing optional fields and formatting for the response. |
+| `remove_followers_from_atask` | Removes specified followers from a task using the POST method, returning the updated task record. |
+| `get_atask_for_agiven_custom_id` | Retrieves a task by its custom ID from a specified workspace using the Asana API. |
+| `search_tasks_in_aworkspace` | Searches for tasks within a specified workspace using various filters, such as text, assignees, projects, tags, and due dates, and returns a list of tasks matching these criteria. |
+| `get_multiple_task_templates` | Retrieves a list of available task templates for standardized task creation, supporting optional filters like project, pagination (limit/offset), and field customization (opt_fields). |
+| `get_atask_template` | Retrieves detailed information about a specific task template in Asana using the "GET" method at the "/task_templates/{task_template_gid}" path. |
+| `delete_atask_template` | Deletes a specific task template by making a DELETE request to the API endpoint, returning an empty response upon success. |
+| `instantiate_atask_from_atask_template` | Instantiates a task from a specified task template using the Asana API, allowing for the creation of standardized and repeatable workflows by leveraging pre-defined templates. |
+| `create_ateam` | Creates a new team resource using the API at the "/teams" path with the "POST" method. |
+| `get_ateam` | Retrieves details for a specific GitHub team by its global ID, supporting optional query parameters to customize the response format and included fields. |
+| `update_ateam` | Updates the details of a team with the specified GID using the provided parameters, returning a status response based on the operation's success or failure. |
+| `get_teams_in_aworkspace` | Retrieves a list of teams in a specified workspace using the GET method, allowing optional query parameters for customizing output fields, formatting, and pagination. |
+| `get_teams_for_auser` | Retrieves a paginated list of teams associated with a specific user, optionally filtered by organization, using query parameters for customization. |
+| `add_auser_to_ateam` | Adds a user to a team using the provided team ID, allowing for optional specification of additional fields and formatting preferences. |
+| `remove_auser_from_ateam` | Removes a user from a specified team using a POST request and returns a success status upon completion. |
+| `get_ateam_membership` | Retrieves a specific team membership using the "GET" method at "/team_memberships/{team_membership_gid}", allowing optional fields and formatting parameters to be specified. |
+| `get_team_memberships` | Retrieves team membership information for a specified user within a team and workspace, allowing optional fields and pagination. |
+| `get_memberships_from_ateam` | Retrieves team memberships for a specified team using the GitHub API, returning details about members based on optional fields and pagination parameters. |
+| `get_memberships_from_auser` | Retrieves a paginated list of team memberships for a specified user, including optional filtering by workspace and customizable response fields. |
+| `get_atime_period` | Retrieves details about a specific time period, identified by its GID, using the "GET" method at the "/time_periods/{time_period_gid}" path. |
+| `get_time_periods` | Retrieves a list of time periods filtered by start and end dates, workspace, and other optional parameters. |
+| `get_time_tracking_entries_for_atask` | Retrieves a list of time tracking entries for a specific task based on provided query parameters, such as limit, offset, and optional fields, returning the data in a formatted response. |
+| `create_atime_tracking_entry` | Creates a new time tracking entry for a specified task using the POST method, allowing for optional fields and formatting through query parameters. |
+| `get_atime_tracking_entry` | Retrieves a specific time tracking entry by its global ID, allowing optional field selection for the response. |
+| `update_atime_tracking_entry` | Updates an existing time tracking entry by its GID and returns the modified entry. |
+| `delete_atime_tracking_entry` | Deletes a specific time tracking entry identified by the `time_tracking_entry_gid` using the DELETE method and returns relevant status messages based on the success or failure of the operation. |
+| `get_objects_via_typeahead` | Queries a workspace for typeahead results using the specified parameters and returns relevant objects or suggestions. |
+| `get_multiple_users` | Retrieves a list of users with optional filtering parameters and pagination support. |
+| `get_auser` | Retrieves details for a specific user using their unique identifier (user_gid) and offers optional query parameters for customizing the returned data fields (opt_fields) and response formatting (opt_pretty). |
+| `get_auser_sfavorites` | Retrieves a list of favorites for a user with the specified `user_gid`, allowing optional filtering by resource type and workspace, and customizable output through additional query parameters. |
+| `get_users_in_ateam` | Retrieves a paginated list of users associated with a specified team, supporting optional fields, pretty formatting, and offset parameters. |
+| `get_users_in_aworkspace_or_organization` | Retrieves a list of users associated with the specified workspace, supporting optional fields, pagination, and response formatting. |
+| `get_auser_task_list` | Retrieves details of a user task list by its global ID, supporting optional query parameters for field selection and response formatting. |
+| `get_auser_stask_list` | Retrieves a list of tasks for a user identified by the user_gid parameter, allowing optional filtering by additional fields or workspace. |
+| `get_multiple_webhooks` | Retrieves a list of webhooks, allowing for optional filtering by workspace, resource, and additional fields, with pagination options via limit and offset parameters. |
+| `establish_awebhook` | Creates a new webhook subscription to receive event notifications and returns the subscription details. |
+| `get_awebhook` | Retrieves information about a webhook with the specified ID using the "GET" method, allowing optional fields and pretty-print formatting. |
+| `update_awebhook` | Updates a webhook identified by its GID at the "/webhooks/{webhook_gid}" path, allowing modifications to existing webhook configurations. |
+| `delete_awebhook` | Deletes a webhook identified by the `{webhook_gid}` and returns a status message, allowing for the removal of existing webhook configurations. |
+| `get_multiple_workspaces` | Retrieves a paginated list of workspaces with optional filtering and formatting parameters. |
+| `get_aworkspace` | Retrieves a specific workspace by its GID using the Asana API, optionally including additional fields and formatting options. |
+| `update_aworkspace` | Updates a specified workspace's properties and returns the modified workspace data. |
+| `add_auser_to_aworkspace_or_organization` | Adds a user to a specified workspace and returns the full user record upon successful completion. |
+| `remove_auser_from_aworkspace_or_organization` | Removes a user from a workspace using the specified POST API operation at the "/workspaces/{workspace_gid}/removeUser" path. |
+| `get_aworkspace_membership` | Retrieves a specific workspace membership entry by its global identifier (GID) with optional field filtering and formatted output. |
+| `get_workspace_memberships_for_auser` | Retrieves a list of workspace memberships for a specified user based on the provided query parameters, including optional fields, formatting preferences, and pagination settings. |
+| `get_the_workspace_memberships_for_aworkspace` | Retrieves a list of workspace memberships for a specified workspace, providing details about users and their roles within the workspace, allowing for optional filtering and customization of the response. |
