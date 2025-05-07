@@ -21,7 +21,7 @@ class AsanaApp(APIApplication):
             dict[str, Any]: Successfully retrieved the record for a single allocation.
 
         Tags:
-            Allocations
+            Allocations, important
         """
         if allocation_gid is None:
             raise ValueError("Missing required parameter 'allocation_gid'")
@@ -63,7 +63,7 @@ class AsanaApp(APIApplication):
             dict[str, Any]: Successfully updated the allocation.
 
         Tags:
-            Allocations
+            Allocations, important
         """
         if allocation_gid is None:
             raise ValueError("Missing required parameter 'allocation_gid'")
@@ -90,7 +90,7 @@ class AsanaApp(APIApplication):
             dict[str, Any]: Successfully deleted the specified allocation.
 
         Tags:
-            Allocations
+            Allocations, important
         """
         if allocation_gid is None:
             raise ValueError("Missing required parameter 'allocation_gid'")
